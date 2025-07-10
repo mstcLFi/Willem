@@ -115,7 +115,7 @@
     function nieuweVraag() {
       if (!gameRunning) return;
       num1 = Math.floor(Math.random() * 10) + 1;
-      num2 = Math.floor(Math.random() * 10) + 1;
+      num2 = 2 //Math.floor(Math.random() * 10) + 1;
       questionEl.textContent = `Wat is ${num1} × ${num2}?`;
       answerEl.value = '';
       feedbackEl.textContent = '';
