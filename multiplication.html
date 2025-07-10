@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Tafels Oefenen</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    #afbeelding {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    #question {
+      font-size: 28px;
+      margin: 20px 0;
+    }
+    input[type="number"] {
+      font-size: 20px;
+      padding: 8px;
+      width: 100px;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin-top: 10px;
+    }
+    #feedback {
+      margin-top: 20px;
+      font-size: 22px;
+    }
+    #scoreboard {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+    #timer {
+      font-size: 24px;
+      margin-top: 20px;
+      color: #222;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Tafels Oefenen</h1>
+  <button id="startBtn">Start spel</button>
+  <div id="timer">⏳ Tijd over: 01:00</div>
+
+  <div id="afbeelding-container">
+    <img id="afbeelding" src="" alt="Afbeelding">
+  </div>
+
+  <div id="question">Klik op 'Start spel' om te beginnen.</div>
+  <input type="number" id="answer" placeholder="Antwoord" autocomplete="off" disabled>
+  <br>
+  <button id="submit" disabled>Controleer</button>
+
+  <div id="feedback"></div>
+
+  <div id="scoreboard">
+    Huidige score: <span id="score">0</span><br>
+    Hoogste score: <span id="highscore">0</span> (<span id="highscorer">niemand</span>)
+  </div>
+
+  <script>
+    let num1, num2;
+    let score = 0;
+    let timer;
+    let timeLeft = 60;
+    let gameRunning = false;
+
+    let highscore = parseInt(localStorage.getItem('highscore')) || 0;
+    let highscorer = localStorage.getItem('highscorer') || 'niemand';
+
+    const questionEl = document.getElementById('question');
+    const answerEl = document.getElementById('answer');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreEl = document.getElementById('score');
+    const highscoreEl = document.getElementById('highscore');
+    const highscorerEl = document.getElementById('highscorer');
+    const submitBtn = document.getElementById('submit');
+    const timerEl = document.getElementById('timer');
+    const startBtn = document.getElementById('startBtn');
+    const afbeeldingEl = document.getElementById('afbeelding');
+
+    // Lokale afbeeldingen in map "minecraft images"
+    const afbeeldingen = [
+      "minecraft images/1.png",
+      "minecraft images/2.png",
+      "minecraft images/3.png",
+      "minecraft images/4.jpg",
+      "minecraft images/5.png",
+      "minecraft images/6.png"
+    ];
+
+    function updateScoreboard() {
+      scoreEl.textContent = score;
+      highscoreEl.textContent = highscore;
+      highscorerEl.textContent = highscorer;
+    }
+
+    function formatTime(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
+      return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function nieuweVraag() {
+      if (!gameRunning) return;
+      num1 = Math.floor(Math.random() * 10) + 1;
+      num2 = Math.floor(Math.random() * 10) + 1;
+      questionEl.textContent = `Wat is ${num1} × ${num2}?`;
+      answerEl.value = '';
+      feedbackEl.textContent = '';
+      answerEl.focus();
+
+      // Toon een willekeurige afbeelding
+      const randomAfbeelding = afbeeldingen[Math.floor(Math.random() * afbeeldingen.length)];
+      afbeeldingEl.src = randomAfbeelding;
+    }
+
+    function resetSpel() {
+      clearInterval(timer);
+      timeLeft = 60;
+      score = 0;
+      gameRunning = true;
+      answerEl.disabled = false;
+      submitBtn.disabled = false;
+      startBtn.disabled = true;
+      updateScoreboard();
+      timerEl.textContent = `⏳ Tijd over: ${formatTime(timeLeft)}`;
+      timer = setInterval(updateTimer, 1000);
+      nieuweVraag();
+    }
+
+    function controleerAntwoord() {
+      if (!gameRunning) return;
+
+      const antwoord = parseInt(answerEl.value);
+      const juist = num1 * num2;
+
+      if (antwoord === juist) {
+        score++;
+        feedbackEl.textContent = '✅ Goed zo!';
+        feedbackEl.style.color = 'green';
+        updateScoreboard();
+        setTimeout(nieuweVraag, 1000);
+      } else {
+        feedbackEl.textContent = `❌ Fout! Het juiste antwoord is ${juist}.`;
+        feedbackEl.style.color = 'red';
+
+        if (score > highscore) {
+          const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
+          if (naam) {
+            highscore = score;
+            highscorer = naam;
+            localStorage.setItem('highscore', highscore);
+            localStorage.setItem('highscorer', highscorer);
+          }
+        }
+
+        resetSpel();
+      }
+    }
+
+    function updateTimer() {
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        gameRunning = false;
+        timerEl.textContent = "⏳ Tijd is om!";
+        questionEl.textContent = "⏹️ Spel afgelopen!";
+        answerEl.disabled = true;
+        submitBtn.disabled = true;
+        startBtn.disabled = false;
+
+        if (score > highscore) {
+          const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
+          if (naam) {
+            highscore = score;
+            highscorer = naam;
+            localStorage.setItem('highscore', highscore);
+            localStorage.setItem('highscorer', highscorer);
+          }
+        }
+
+        score = 0;
+        updateScoreboard();
+        return;
+      }
+
+      timeLeft--;
+      timerEl.textContent = `⏳ Tijd over: ${formatTime(timeLeft)}`;
+    }
+
+    answerEl.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        controleerAntwoord();
+      }
+    });
+
+    submitBtn.addEventListener('click', controleerAntwoord);
+    startBtn.addEventListener('click', resetSpel);
+
+    window.addEventListener('load', () => {
+      updateScoreboard();
+      // Toon alvast een willekeurige afbeelding bij opstarten
+      const startAfbeelding = afbeeldingen[Math.floor(Math.random() * afbeeldingen.length)];
+      afbeeldingEl.src = startAfbeelding;
+    });
+  </script>
+
+</body>
+</html>
