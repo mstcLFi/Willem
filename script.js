@@ -161,17 +161,33 @@ function updateTimer() {
     submitBtn.disabled = true;
     startBtn.disabled = false;
 
-    if (score > highscore) {
-      const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
-      if (naam) {
-        highscore = score;
-        highscorer = naam;
-        localStorage.setItem('highscore', highscore);
-        localStorage.setItem('highscorer', highscorer);
+    // Play wrong sound before prompting highscore name
+    wrongSound.currentTime = 0;
+    wrongSound.play().then(() => {
+      if (score > highscore) {
+        const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
+        if (naam) {
+          highscore = score;
+          highscorer = naam;
+          localStorage.setItem('highscore', highscore);
+          localStorage.setItem('highscorer', highscorer);
+        }
       }
-    }
+      updateScoreboard();
+    }).catch(() => {
+      // In case sound play is blocked, fallback to prompt anyway
+      if (score > highscore) {
+        const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
+        if (naam) {
+          highscore = score;
+          highscorer = naam;
+          localStorage.setItem('highscore', highscore);
+          localStorage.setItem('highscorer', highscorer);
+        }
+      }
+      updateScoreboard();
+    });
 
-    updateScoreboard();
     return;
   }
 
