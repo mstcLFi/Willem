@@ -1,0 +1,87 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 40px;
+  background-color: #f9f9f9;
+}
+h1 {
+  color: #333;
+}
+.image-wrapper {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 20px;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+.image-wrapper img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+#question {
+  font-size: 28px;
+  margin: 20px 0;
+}
+input[type="number"] {
+  font-size: 1.2em;
+  padding: 0.5em;
+  width: 50%;
+  max-width: 150px;
+}
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+#feedback {
+  margin-top: 20px;
+  font-size: 22px;
+}
+#scoreboard {
+  margin-top: 30px;
+  font-size: 18px;
+}
+#timer {
+  font-size: 24px;
+  margin-top: 20px;
+  color: #222;
+  font-weight: bold;
+}
+.tafel-selectie {
+  margin: 20px 0;
+}
+.tafel-selectie label {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px 15px;
+  border: 2px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}
+.tafel-selectie input[type="checkbox"] {
+  display: none;
+}
+.tafel-selectie input[type="checkbox"]:checked + label {
+  background-color: #333;
+  color: white;
+}
+@media (max-width: 600px) {
+  body {
+    padding: 20px;
+  }
+  #question {
+    font-size: 22px;
+  }
+  button {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
