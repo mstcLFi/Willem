@@ -51,7 +51,8 @@
 
   <h1>Tafels Oefenen</h1>
   <button id="startBtn">Start spel</button>
-  <div id="timer">⏳ Tijd over: 01:00</div>
+  <button id="resetHighscoreBtn">Vergeet highscore</button>
+  <div id="timer">⏳ Tijd over: 03:00</div>
 
   <div id="afbeelding-container">
     <img id="afbeelding" src="" alt="Afbeelding">
@@ -69,11 +70,15 @@
     Hoogste score: <span id="highscore">0</span> (<span id="highscorer">niemand</span>)
   </div>
 
+  <!-- Audio elements -->
+  <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
+
   <script>
     let num1, num2;
     let score = 0;
     let timer;
-    let timeLeft = 60;
+    let timeLeft = 180;
     let gameRunning = false;
 
     let highscore = parseInt(localStorage.getItem('highscore')) || 0;
@@ -88,9 +93,12 @@
     const submitBtn = document.getElementById('submit');
     const timerEl = document.getElementById('timer');
     const startBtn = document.getElementById('startBtn');
+    const resetHighscoreBtn = document.getElementById('resetHighscoreBtn');
     const afbeeldingEl = document.getElementById('afbeelding');
 
-    // Lokale afbeeldingen in map "minecraft images"
+    const correctSound = document.getElementById('correctSound');
+    const wrongSound = document.getElementById('wrongSound');
+
     const afbeeldingen = [
       "minecraft images/1.png",
       "minecraft images/2.png",
@@ -115,20 +123,19 @@
     function nieuweVraag() {
       if (!gameRunning) return;
       num1 = Math.floor(Math.random() * 10) + 1;
-      num2 = 2 //Math.floor(Math.random() * 10) + 1;
+      num2 = 2; // Fixed tafel
       questionEl.textContent = `Wat is ${num1} × ${num2}?`;
       answerEl.value = '';
       feedbackEl.textContent = '';
       answerEl.focus();
 
-      // Toon een willekeurige afbeelding
       const randomAfbeelding = afbeeldingen[Math.floor(Math.random() * afbeeldingen.length)];
       afbeeldingEl.src = randomAfbeelding;
     }
 
     function resetSpel() {
       clearInterval(timer);
-      timeLeft = 60;
+      timeLeft = 180;
       score = 0;
       gameRunning = true;
       answerEl.disabled = false;
@@ -150,11 +157,15 @@
         score++;
         feedbackEl.textContent = '✅ Goed zo!';
         feedbackEl.style.color = 'green';
+        correctSound.currentTime = 0;
+        correctSound.play();
         updateScoreboard();
         setTimeout(nieuweVraag, 1000);
       } else {
         feedbackEl.textContent = `❌ Fout! Het juiste antwoord is ${juist}.`;
         feedbackEl.style.color = 'red';
+        wrongSound.currentTime = 0;
+        wrongSound.play();
 
         if (score > highscore) {
           const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
@@ -206,11 +217,26 @@
     });
 
     submitBtn.addEventListener('click', controleerAntwoord);
-    startBtn.addEventListener('click', resetSpel);
+
+    startBtn.addEventListener('click', () => {
+      // Warm up audio to avoid autoplay restrictions
+      correctSound.play().then(() => correctSound.pause());
+      wrongSound.play().then(() => wrongSound.pause());
+      resetSpel();
+    });
+
+    resetHighscoreBtn.addEventListener('click', () => {
+      if (confirm("Weet je zeker dat je de highscore wilt wissen?")) {
+        localStorage.removeItem('highscore');
+        localStorage.removeItem('highscorer');
+        highscore = 0;
+        highscorer = 'niemand';
+        updateScoreboard();
+      }
+    });
 
     window.addEventListener('load', () => {
       updateScoreboard();
-      // Toon alvast een willekeurige afbeelding bij opstarten
       const startAfbeelding = afbeeldingen[Math.floor(Math.random() * afbeeldingen.length)];
       afbeeldingEl.src = startAfbeelding;
     });
