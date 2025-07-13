@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tafels Oefenen</title>
   <style>
     body {
@@ -10,40 +11,78 @@
       padding: 40px;
       background-color: #f9f9f9;
     }
+
     h1 {
       color: #333;
     }
-    #afbeelding {
-      max-width: 200px;
-      margin-bottom: 20px;
+
+    .image-wrapper {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 20px;
+      background-color: #eee;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
+
+    .image-wrapper img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
     #question {
       font-size: 28px;
       margin: 20px 0;
     }
+
     input[type="number"] {
-      font-size: 20px;
-      padding: 8px;
-      width: 100px;
+      font-size: 1.2em;
+      padding: 0.5em;
+      width: 50%;
+      max-width: 150px;
     }
+
     button {
       font-size: 18px;
       padding: 10px 20px;
       margin-top: 10px;
     }
+
     #feedback {
       margin-top: 20px;
       font-size: 22px;
     }
+
     #scoreboard {
       margin-top: 30px;
       font-size: 18px;
     }
+
     #timer {
       font-size: 24px;
       margin-top: 20px;
       color: #222;
       font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+
+      #question {
+        font-size: 22px;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
@@ -55,7 +94,9 @@
   <div id="timer">⏳ Tijd over: 03:00</div>
 
   <div id="afbeelding-container">
-    <img id="afbeelding" src="" alt="Afbeelding">
+    <div class="image-wrapper">
+      <img id="afbeelding" src="" alt="Afbeelding">
+    </div>
   </div>
 
   <div id="question">Klik op 'Start spel' om te beginnen.</div>
@@ -123,7 +164,7 @@
     function nieuweVraag() {
       if (!gameRunning) return;
       num1 = Math.floor(Math.random() * 10) + 1;
-      num2 = 2; // Fixed tafel
+      num2 = 2;
       questionEl.textContent = `Wat is ${num1} × ${num2}?`;
       answerEl.value = '';
       feedbackEl.textContent = '';
@@ -219,7 +260,6 @@
     submitBtn.addEventListener('click', controleerAntwoord);
 
     startBtn.addEventListener('click', () => {
-      // Warm up audio to avoid autoplay restrictions
       correctSound.play().then(() => correctSound.pause());
       wrongSound.play().then(() => wrongSound.pause());
       resetSpel();
