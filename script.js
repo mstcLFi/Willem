@@ -3,9 +3,23 @@ let score = 0;
 let timer;
 let timeLeft = 180;
 let gameRunning = false;
+let spelerNaam = '';
 
-let highscore = parseInt(localStorage.getItem('highscore')) || 0;
-let highscorer = localStorage.getItem('highscorer') || 'niemand';
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
+const pointsPerTable = {
+  0: 0.1,
+  1: 0.1,
+  2: 0.2,
+  3: 1.0,
+  4: 0.9,
+  5: 0.3,
+  6: 1.5,
+  7: 2.0,
+  8: 1.8,
+  9: 1.3,
+  10: 0.2
+};
 
 const questionEl = document.getElementById('question');
 const answerEl = document.getElementById('answer');
@@ -13,12 +27,14 @@ const feedbackEl = document.getElementById('feedback');
 const scoreEl = document.getElementById('score');
 const highscoreEl = document.getElementById('highscore');
 const highscorerEl = document.getElementById('highscorer');
+const spelerNaamEl = document.getElementById('spelerNaam');
 const submitBtn = document.getElementById('submit');
 const timerEl = document.getElementById('timer');
 const startBtn = document.getElementById('startBtn');
 const resetHighscoreBtn = document.getElementById('resetHighscoreBtn');
 const afbeeldingEl = document.getElementById('afbeelding');
 const tafelCheckboxesContainer = document.getElementById('tafelCheckboxes');
+const leaderboardList = document.getElementById('leaderboardList');
 
 const correctSound = document.getElementById('correctSound');
 const wrongSound = document.getElementById('wrongSound');
@@ -33,7 +49,15 @@ const afbeeldingen = [
   "minecraft images/7.png",
   "minecraft images/8.png",
   "minecraft images/9.png",
-  "minecraft images/10.png"
+  "minecraft images/10.png",
+  "minecraft images/11.png",
+  "minecraft images/12.png",
+  "minecraft images/13.jpg",
+  "minecraft images/14.png",
+  "minecraft images/15.png",
+  "minecraft images/16.png",
+  "minecraft images/17.png",
+  "minecraft images/18.jpg"
 ];
 
 for (let i = 0; i <= 10; i++) {
@@ -46,9 +70,14 @@ for (let i = 0; i <= 10; i++) {
   label.htmlFor = checkbox.id;
   label.textContent = i;
 
+  // Add a tooltip with the score
+  const score = pointsPerTable[i] ?? 0;
+  label.title = `+${score.toFixed(1)} punt(en)`;
+
   tafelCheckboxesContainer.appendChild(checkbox);
   tafelCheckboxesContainer.appendChild(label);
 }
+
 
 function getSelectedTafels() {
   const selected = [];
@@ -60,9 +89,27 @@ function getSelectedTafels() {
 }
 
 function updateScoreboard() {
-  scoreEl.textContent = score;
-  highscoreEl.textContent = highscore;
-  highscorerEl.textContent = highscorer;
+  scoreEl.textContent = score.toFixed(1);
+  spelerNaamEl.textContent = spelerNaam || '-';
+
+  if (leaderboard.length > 0) {
+    highscoreEl.textContent = leaderboard[0].score.toFixed(1);
+    highscorerEl.textContent = leaderboard[0].name;
+  } else {
+    highscoreEl.textContent = '0.0';
+    highscorerEl.textContent = 'niemand';
+  }
+
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  leaderboardList.innerHTML = '';
+  leaderboard.slice(0, 5).forEach(entry => {
+    const li = document.createElement('li');
+    li.textContent = `${entry.name}: ${entry.score.toFixed(1)}`;
+    leaderboardList.appendChild(li);
+  });
 }
 
 function formatTime(seconds) {
@@ -90,9 +137,7 @@ function nieuweVraag() {
   feedbackEl.textContent = '';
   answerEl.focus();
 
-  // Update image on new question as before
-  const randomAfbeelding = afbeeldingen[Math.floor(Math.random() * afbeeldingen.length)];
-  afbeeldingEl.src = randomAfbeelding;
+  showRandomImage();
 }
 
 function resetSpel() {
@@ -109,6 +154,13 @@ function resetSpel() {
   nieuweVraag();
 }
 
+function checkLeaderboard() {
+  leaderboard.push({ name: spelerNaam || 'Gast', score });
+  leaderboard.sort((a, b) => b.score - a.score);
+  leaderboard = leaderboard.slice(0, 5);
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
 function controleerAntwoord() {
   if (!gameRunning) return;
 
@@ -116,15 +168,19 @@ function controleerAntwoord() {
   const juist = num1 * num2;
 
   if (antwoord === juist) {
-    score++;
-    feedbackEl.textContent = '✅ Goed zo!';
+    const earned = pointsPerTable[num2] || 0;
+    score += earned;
+    feedbackEl.textContent = `✅ Goed zo! +${earned} punt(en)`;
     feedbackEl.style.color = 'green';
     correctSound.currentTime = 0;
     correctSound.play();
     updateScoreboard();
     nieuweVraag();
   } else {
-    feedbackEl.textContent = `❌ Fout! Het juiste antwoord is ${juist}.`;
+    // Freeze the timer
+    clearInterval(timer);
+
+    feedbackEl.textContent = `❌ Fout! Het juiste antwoord op ${num1} × ${num2} is ${juist}.`;
     feedbackEl.style.color = 'red';
     wrongSound.currentTime = 0;
     wrongSound.play();
@@ -132,24 +188,16 @@ function controleerAntwoord() {
     answerEl.disabled = true;
     submitBtn.disabled = true;
 
-    const wasHighscore = score > highscore;
+    checkLeaderboard();
 
     setTimeout(() => {
-      if (wasHighscore) {
-        const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
-        if (naam) {
-          highscore = score;
-          highscorer = naam;
-          localStorage.setItem('highscore', highscore);
-          localStorage.setItem('highscorer', highscorer);
-        }
-      }
       startBtn.disabled = false;
-      updateScoreboard();
       questionEl.textContent = "Klik op 'Start spel' om opnieuw te beginnen.";
+      updateScoreboard();
     }, 1000);
   }
 }
+
 
 function updateTimer() {
   if (timeLeft <= 0) {
@@ -161,30 +209,9 @@ function updateTimer() {
     submitBtn.disabled = true;
     startBtn.disabled = false;
 
-    // Play wrong sound before prompting highscore name
     wrongSound.currentTime = 0;
-    wrongSound.play().then(() => {
-      if (score > highscore) {
-        const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
-        if (naam) {
-          highscore = score;
-          highscorer = naam;
-          localStorage.setItem('highscore', highscore);
-          localStorage.setItem('highscorer', highscorer);
-        }
-      }
-      updateScoreboard();
-    }).catch(() => {
-      // In case sound play is blocked, fallback to prompt anyway
-      if (score > highscore) {
-        const naam = prompt("🎉 Nieuwe highscore! Wat is je naam?");
-        if (naam) {
-          highscore = score;
-          highscorer = naam;
-          localStorage.setItem('highscore', highscore);
-          localStorage.setItem('highscorer', highscorer);
-        }
-      }
+    wrongSound.play().finally(() => {
+      checkLeaderboard();
       updateScoreboard();
     });
 
@@ -204,22 +231,50 @@ answerEl.addEventListener('keydown', function(e) {
 submitBtn.addEventListener('click', controleerAntwoord);
 
 startBtn.addEventListener('click', () => {
+  spelerNaam = prompt("Wat is je naam?");
+  if (!spelerNaam) spelerNaam = 'Gast';
+
   correctSound.play().then(() => correctSound.pause());
   wrongSound.play().then(() => wrongSound.pause());
   resetSpel();
 });
 
 resetHighscoreBtn.addEventListener('click', () => {
-  if (confirm("Weet je zeker dat je de highscore wilt wissen?")) {
-    localStorage.removeItem('highscore');
-    localStorage.removeItem('highscorer');
-    highscore = 0;
-    highscorer = 'niemand';
-    updateScoreboard();
+  const input = prompt("Voer het wachtwoord in om de highscores te wissen:");
+  if (input === "Zombie") {
+    if (confirm("Weet je zeker dat je de highscore wilt wissen?")) {
+      localStorage.removeItem('leaderboard');
+      leaderboard = [];
+      updateScoreboard();
+      alert("Highscores zijn gewist.");
+    }
+  } else if (input !== null) {
+    alert("❌ Wachtwoord onjuist. De highscores blijven behouden.");
   }
 });
 
-// Show a random image right after loading the script
-showRandomImage();
+// Add reset logic when any tafel checkbox is toggled during a running game
+for (let i = 0; i <= 10; i++) {
+  const checkbox = document.getElementById('tafel' + i);
+  checkbox.addEventListener('change', () => {
+    if (gameRunning) {
+      // Reset score and timeLeft
+      score = 0;
+      timeLeft = 180;
 
+      // Update UI elements
+      updateScoreboard();
+      timerEl.textContent = `⏳ Tijd over: ${formatTime(timeLeft)}`;
+
+      // Optionally reset the timer interval so it restarts at 180 seconds
+      clearInterval(timer);
+      timer = setInterval(updateTimer, 1000);
+
+      // Also generate a new question immediately
+      nieuweVraag();
+    }
+  });
+}
+
+showRandomImage();
 updateScoreboard();

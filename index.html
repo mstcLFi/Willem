@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="overlay"></div>
+
+  <div id="leaderboard">
+    <h2>🏆 Top 5</h2>
+    <ol id="leaderboardList"></ol>
+  </div>
 
   <h1>Tafels Oefenen</h1>
 
@@ -16,7 +22,7 @@
   </div>
 
   <button id="startBtn">Start spel</button>
-  <button id="resetHighscoreBtn">Vergeet highscore</button>
+  <button id="resetHighscoreBtn">Vergeet highscores</button>
   <div id="timer">⏳ Tijd over: 03:00</div>
 
   <div class="image-wrapper">
@@ -31,8 +37,9 @@
   <div id="feedback"></div>
 
   <div id="scoreboard">
-    Huidige score: <span id="score">0</span><br />
-    Hoogste score: <span id="highscore">0</span> (<span id="highscorer">niemand</span>)
+    Speler: <span id="spelerNaam">-</span><br />
+    Huidige score: <span id="score">0.0</span><br />
+    Hoogste score: <span id="highscore">0.0</span> (<span id="highscorer">niemand</span>)
   </div>
 
   <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>

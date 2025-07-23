@@ -73,6 +73,32 @@ button {
   background-color: #333;
   color: white;
 }
+#leaderboard {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: #fff;
+  padding: 10px 15px;
+  border: 2px solid #444;
+  border-radius: 8px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  text-align: left;
+  max-width: 180px;
+  font-size: 14px;
+  z-index: 1000;
+}
+#leaderboard h2 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+#leaderboard ol {
+  padding-left: 18px;
+  margin: 0;
+}
+#leaderboard li {
+  margin: 4px 0;
+}
 @media (max-width: 600px) {
   body {
     padding: 20px;
@@ -84,4 +110,24 @@ button {
     width: 100%;
     margin-top: 10px;
   }
+}
+
+body {
+  font-family: sans-serif;
+  text-align: center;
+  padding: 40px;
+  background: url("minecraft images/background.png") no-repeat center center fixed;
+  background-size: cover;
+  background-color: #f9f9f9; /* fallback if image fails to load */
+  color: #000; /* optional: ensure readability */
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.6); /* light overlay */
+  z-index: -1;
 }
