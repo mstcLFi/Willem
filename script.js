@@ -1,3 +1,21 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
+  authDomain: "willem-626ef.firebaseapp.com",
+  projectId: "willem-626ef",
+  storageBucket: "willem-626ef.firebasestorage.app",
+  messagingSenderId: "849432090624",
+  appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
+  measurementId: "G-VHRSJC5ZDK",
+  databaseURL: "https://willem-626ef-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const highscoreRef = ref(db, 'highscore');
+
 let num1, num2;
 let score = 0;
 let timer;
@@ -92,13 +110,16 @@ function updateScoreboard() {
   scoreEl.textContent = score.toFixed(1);
   spelerNaamEl.textContent = spelerNaam || '-';
 
-  if (leaderboard.length > 0) {
-    highscoreEl.textContent = leaderboard[0].score.toFixed(1);
-    highscorerEl.textContent = leaderboard[0].name;
-  } else {
-    highscoreEl.textContent = '0.0';
-    highscorerEl.textContent = 'niemand';
-  }
+  onValue(highscoreRef, (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      highscoreEl.textContent = data.score.toFixed(1);
+      highscorerEl.textContent = data.name;
+    } else {
+      highscoreEl.textContent = '0.0';
+      highscorerEl.textContent = 'niemand';
+    }
+  });
 
   renderLeaderboard();
 }
@@ -157,6 +178,17 @@ function resetSpel() {
 function checkLeaderboard() {
   leaderboard.push({ name: spelerNaam || 'Gast', score });
   leaderboard.sort((a, b) => b.score - a.score);
+  // Check if new top score beats Firebase highscore
+  const topScore = leaderboard[0];
+  get(highscoreRef).then(snapshot => {
+    const current = snapshot.val();
+    if (!current || topScore.score > current.score) {
+      set(highscoreRef, {
+        name: topScore.name,
+        score: topScore.score
+      });
+    }
+  });
   leaderboard = leaderboard.slice(0, 5);
   localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 }
