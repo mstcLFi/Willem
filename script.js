@@ -285,29 +285,38 @@ updateScoreboard();
 // Firebase leaderboard functies
 function submitScoreToFirebase(name, score) {
   const db = window.firebaseDB;
+  if (!db) {
+    console.error("Firebase DB is niet beschikbaar.");
+    return;
+  }
   const scoresRef = window.firebaseRef(db, 'highscores');
   window.firebasePush(scoresRef, {
     name: name,
-    score: Number(score)  // <-- Zorg dat dit een getal is
+    score: Number(score)  // Zorg dat dit een getal is
   });
 }
 
 function fetchLeaderboardFromFirebase(callback) {
   const db = window.firebaseDB;
-  const scoresRef = window.firebaseRef('highscores');
+  if (!db) {
+    console.error("Firebase DB is niet beschikbaar.");
+    callback([]);
+    return;
+  }
+
+  const scoresRef = window.firebaseRef(db, 'highscores');
   const topScoresQuery = window.firebaseQuery(
     scoresRef,
     window.firebaseOrderByChild('score'),
     window.firebaseLimitToLast(5)
   );
+
   window.firebaseOnValue(topScoresQuery, (snapshot) => {
     const scores = [];
     snapshot.forEach(child => {
       const val = child.val();
-      console.log("Fetched score:", val);  // 👈 tijdelijk toevoegen
-      scores.unshift(val);
+      scores.unshift(val);  // hoogste score bovenaan
     });
     callback(scores);
   });
 }
-
