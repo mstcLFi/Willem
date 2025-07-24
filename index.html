@@ -9,7 +9,6 @@
 <body>
   <div class="overlay"></div>
 
-  <!-- Leaderboard -->
   <div id="leaderboard">
     <h2>🏆 Top 5</h2>
     <ol id="leaderboardList"></ol>
@@ -17,77 +16,35 @@
 
   <h1>Tafels Oefenen</h1>
 
-  <!-- Tafel selectie -->
   <div class="tafel-selectie">
     <p>Kies de tafels waarmee je wilt oefenen:</p>
     <div id="tafelCheckboxes"></div>
   </div>
 
-  <!-- Spel controls -->
   <button id="startBtn">Start spel</button>
   <button id="resetHighscoreBtn">Vergeet highscores</button>
   <div id="timer">⏳ Tijd over: 03:00</div>
 
-  <!-- Afbeelding -->
   <div class="image-wrapper">
     <img id="afbeelding" src="" alt="Afbeelding" />
   </div>
 
-  <!-- Vraag en antwoord -->
   <div id="question">Klik op 'Start spel' om te beginnen.</div>
   <input type="number" id="answer" placeholder="Antwoord" autocomplete="off" disabled />
   <br />
   <button id="submit" disabled>Controleer</button>
 
-  <!-- Feedback en scores -->
   <div id="feedback"></div>
+
   <div id="scoreboard">
     Speler: <span id="spelerNaam">-</span><br />
     Huidige score: <span id="score">0.0</span><br />
     Hoogste score: <span id="highscore">0.0</span> (<span id="highscorer">niemand</span>)
   </div>
 
-  <!-- Geluiden -->
   <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
   <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
 
-  <!-- Firebase & script.js -->
-  <script src="script.js" defer></script>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      query,
-      orderByChild,
-      limitToLast,
-      onValue
-    } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
-      authDomain: "willem-626ef.firebaseapp.com",
-      projectId: "willem-626ef",
-      storageBucket: "willem-626ef.appspot.com",
-      messagingSenderId: "849432090624",
-      appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
-      measurementId: "G-VHRSJC5ZDK",
-      databaseURL: "https://willem-626ef-default-rtdb.europe-west1.firebasedatabase.app"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Globale Firebase functies beschikbaar maken
-    window.firebaseDB = db;
-    window.firebaseRef = (path) => ref(db, path);
-    window.firebasePush = push;
-    window.firebaseQuery = query;
-    window.firebaseOrderByChild = orderByChild;
-    window.firebaseLimitToLast = limitToLast;
-    window.firebaseOnValue = onValue;
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -105,13 +105,10 @@ function updateScoreboard() {
 
 function renderLeaderboard() {
   leaderboardList.innerHTML = '';
-  fetchLeaderboardFromFirebase((entries) => {
-    leaderboard = entries;
-    entries.forEach(entry => {
-      const li = document.createElement('li');
-      li.textContent = `${entry.name}: ${entry.score.toFixed(1)}`;
-      leaderboardList.appendChild(li);
-    });
+  leaderboard.slice(0, 5).forEach(entry => {
+    const li = document.createElement('li');
+    li.textContent = `${entry.name}: ${entry.score.toFixed(1)}`;
+    leaderboardList.appendChild(li);
   });
 }
 
@@ -161,7 +158,7 @@ function checkLeaderboard() {
   leaderboard.push({ name: spelerNaam || 'Gast', score });
   leaderboard.sort((a, b) => b.score - a.score);
   leaderboard = leaderboard.slice(0, 5);
-  submitScoreToFirebase(spelerNaam || 'Gast', score);
+  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 }
 
 function controleerAntwoord() {
@@ -281,42 +278,3 @@ for (let i = 0; i <= 10; i++) {
 
 showRandomImage();
 updateScoreboard();
-
-// Firebase leaderboard functies
-function submitScoreToFirebase(name, score) {
-  const db = window.firebaseDB;
-  if (!db) {
-    console.error("Firebase DB is niet beschikbaar.");
-    return;
-  }
-  const scoresRef = window.firebaseRef(db, 'highscores');
-  window.firebasePush(scoresRef, {
-    name: name,
-    score: Number(score)  // Zorg dat dit een getal is
-  });
-}
-
-function fetchLeaderboardFromFirebase(callback) {
-  const db = window.firebaseDB;
-  if (!db) {
-    console.error("Firebase DB is niet beschikbaar.");
-    callback([]);
-    return;
-  }
-
-  const scoresRef = window.firebaseRef(db, 'highscores');
-  const topScoresQuery = window.firebaseQuery(
-    scoresRef,
-    window.firebaseOrderByChild('score'),
-    window.firebaseLimitToLast(5)
-  );
-
-  window.firebaseOnValue(topScoresQuery, (snapshot) => {
-    const scores = [];
-    snapshot.forEach(child => {
-      const val = child.val();
-      scores.unshift(val);  // hoogste score bovenaan
-    });
-    callback(scores);
-  });
-}
