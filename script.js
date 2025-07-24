@@ -286,7 +286,10 @@ updateScoreboard();
 function submitScoreToFirebase(name, score) {
   const db = window.firebaseDB;
   const scoresRef = window.firebaseRef(db, 'highscores');
-  window.firebasePush(scoresRef, { name, score });
+  window.firebasePush(scoresRef, {
+    name: name,
+    score: Number(score)  // <-- Zorg dat dit een getal is
+  });
 }
 
 function fetchLeaderboardFromFirebase(callback) {
