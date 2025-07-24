@@ -302,7 +302,12 @@ function fetchLeaderboardFromFirebase(callback) {
   );
   window.firebaseOnValue(topScoresQuery, (snapshot) => {
     const scores = [];
-    snapshot.forEach(child => scores.unshift(child.val()));
+    snapshot.forEach(child => {
+      const val = child.val();
+      console.log("Fetched score:", val);  // 👈 tijdelijk toevoegen
+      scores.unshift(val);
+    });
     callback(scores);
   });
 }
+
