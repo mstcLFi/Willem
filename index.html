@@ -6,6 +6,42 @@
   <title>Tafels Oefenen</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    push,
+    query,
+    orderByChild,
+    limitToLast,
+    onValue
+  } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
+    authDomain: "willem-626ef.firebaseapp.com",
+    projectId: "willem-626ef",
+    storageBucket: "willem-626ef.firebasestorage.app",
+    messagingSenderId: "849432090624",
+    appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
+    measurementId: "G-VHRSJC5ZDK",
+    databaseURL: "https://willem-626ef-default-rtdb.europe-west1.firebasedatabase.app"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  window.firebaseDB = db;
+  window.firebaseRef = ref;
+  window.firebasePush = push;
+  window.firebaseQuery = query;
+  window.firebaseOrderByChild = orderByChild;
+  window.firebaseLimitToLast = limitToLast;
+  window.firebaseOnValue = onValue;
+</script>
+
 <body>
   <div class="overlay"></div>
 

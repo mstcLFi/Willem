@@ -105,10 +105,13 @@ function updateScoreboard() {
 
 function renderLeaderboard() {
   leaderboardList.innerHTML = '';
-  leaderboard.slice(0, 5).forEach(entry => {
-    const li = document.createElement('li');
-    li.textContent = `${entry.name}: ${entry.score.toFixed(1)}`;
-    leaderboardList.appendChild(li);
+  fetchLeaderboardFromFirebase((entries) => {
+    leaderboard = entries;
+    entries.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.name}: ${entry.score.toFixed(1)}`;
+      leaderboardList.appendChild(li);
+    });
   });
 }
 
@@ -158,7 +161,7 @@ function checkLeaderboard() {
   leaderboard.push({ name: spelerNaam || 'Gast', score });
   leaderboard.sort((a, b) => b.score - a.score);
   leaderboard = leaderboard.slice(0, 5);
-  localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+  submitScoreToFirebase(spelerNaam || 'Gast', score);
 }
 
 function controleerAntwoord() {
@@ -278,3 +281,25 @@ for (let i = 0; i <= 10; i++) {
 
 showRandomImage();
 updateScoreboard();
+
+// Firebase leaderboard functies
+function submitScoreToFirebase(name, score) {
+  const db = window.firebaseDB;
+  const scoresRef = window.firebaseRef(db, 'highscores');
+  window.firebasePush(scoresRef, { name, score });
+}
+
+function fetchLeaderboardFromFirebase(callback) {
+  const db = window.firebaseDB;
+  const scoresRef = window.firebaseRef(db, 'highscores');
+  const topScoresQuery = window.firebaseQuery(
+    scoresRef,
+    window.firebaseOrderByChild('score'),
+    window.firebaseLimitToLast(5)
+  );
+  window.firebaseOnValue(topScoresQuery, (snapshot) => {
+    const scores = [];
+    snapshot.forEach(child => scores.unshift(child.val()));
+    callback(scores);
+  });
+}
