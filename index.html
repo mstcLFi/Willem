@@ -23,7 +23,7 @@
     apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
     authDomain: "willem-626ef.firebaseapp.com",
     projectId: "willem-626ef",
-    storageBucket: "willem-626ef.firebasestorage.app",
+    storageBucket: "willem-626ef.appspot.com",
     messagingSenderId: "849432090624",
     appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
     measurementId: "G-VHRSJC5ZDK",
@@ -33,6 +33,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  // Expose Firebase functions globally
   window.firebaseDB = db;
   window.firebaseRef = ref;
   window.firebasePush = push;
