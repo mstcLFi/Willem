@@ -294,7 +294,7 @@ function submitScoreToFirebase(name, score) {
 
 function fetchLeaderboardFromFirebase(callback) {
   const db = window.firebaseDB;
-  const scoresRef = window.firebaseRef(db, 'highscores');
+  const scoresRef = window.firebaseRef('highscores');
   const topScoresQuery = window.firebaseQuery(
     scoresRef,
     window.firebaseOrderByChild('score'),

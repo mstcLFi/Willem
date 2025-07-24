@@ -35,7 +35,7 @@
 
   // Expose Firebase functions globally
   window.firebaseDB = db;
-  window.firebaseRef = ref;
+  window.firebaseRef = (path) => ref(db, path);
   window.firebasePush = push;
   window.firebaseQuery = query;
   window.firebaseOrderByChild = orderByChild;
