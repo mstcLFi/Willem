@@ -8,6 +8,7 @@ const successSound = document.getElementById('successSound');
 
 let currentNum2 = null;
 let correctAnswer = null;
+let wrongAttemptMade = false;
 
 const successImages = [
   'brainrot images/ballerina cappuccina.png',
@@ -61,6 +62,7 @@ function generateQuestion() {
   message.textContent = '';
   choicesDiv.innerHTML = '';
   successImage.classList.add('hidden');
+  wrongAttemptMade = false;
 
   const num1 = Math.floor(Math.random() * 10) + 1;
   correctAnswer = num1 * currentNum2;
@@ -89,16 +91,20 @@ function handleAnswer(btn, selected) {
   if (selected === correctAnswer) {
     btn.classList.add('correct');
     message.textContent = '🎉 Goed gedaan!';
-    showRandomSuccessImage();
     disableAllChoices();
 
-    setTimeout(() => {
-      generateQuestion();
-    }, 2000);
+    if (!wrongAttemptMade) {
+      showRandomSuccessImage();
+    } else {
+      setTimeout(() => {
+        generateQuestion();
+      }, 2000);
+    }
   } else {
     btn.classList.add('wrong');
     message.textContent = '❌ Probeer het opnieuw!';
     btn.style.pointerEvents = 'none';
+    wrongAttemptMade = true;
   }
 }
 
