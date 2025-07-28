@@ -186,7 +186,7 @@ showStatsBtn.addEventListener('click', () => {
   const labels = [];
   const data = [];
 
-  for (let num1 = 0; num1 <= 10; num1++) {
+  for (let num1 = 1; num1 <= 10; num1++) {
     const key = `${num1}x${currentTable}`;
     labels.push(`${num1}×${currentTable}`);
     data.push(localStats[key] || 0);
