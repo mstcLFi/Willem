@@ -235,3 +235,21 @@ function resetStats() {
     alert("Onjuist wachtwoord. Reset geannuleerd.");
   }
 }
+
+const bgColorPicker = document.getElementById("bgColorPicker");
+
+// Load saved background color on page load
+window.addEventListener("DOMContentLoaded", () => {
+  const savedColor = localStorage.getItem("bgColor");
+  if (savedColor) {
+    document.body.style.backgroundColor = savedColor;
+    bgColorPicker.value = savedColor;
+  }
+});
+
+// Update background color when user selects a new one
+bgColorPicker.addEventListener("input", (e) => {
+  const color = e.target.value;
+  document.body.style.backgroundColor = color;
+  localStorage.setItem("bgColor", color);
+});
