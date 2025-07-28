@@ -10,7 +10,6 @@ let currentNum2 = null;
 let correctAnswer = null;
 let wrongAttemptMade = false;
 
-// Load stats from localStorage or initialize
 let stats = JSON.parse(localStorage.getItem('questionStats')) || {};
 
 const successImages = [
@@ -65,7 +64,7 @@ function weightedRandomQuestion(table) {
   const questions = [];
   for (let i = 1; i <= 10; i++) {
     const key = `${i}x${table}`;
-    const weight = (stats[key] || 0) + 1; // Base weight = 1
+    const weight = (stats[key] || 0) + 1;
     questions.push({ num1: i, weight });
   }
 
@@ -76,7 +75,7 @@ function weightedRandomQuestion(table) {
     rand -= q.weight;
   }
 
-  return Math.floor(Math.random() * 10) + 1; // Fallback
+  return Math.floor(Math.random() * 10) + 1;
 }
 
 function recordMistake(num1, num2) {
@@ -98,7 +97,6 @@ function generateQuestion() {
 
   const answers = new Set();
   answers.add(correctAnswer);
-
   while (answers.size < 3) {
     const wrong = currentNum2 * (Math.floor(Math.random() * 10) + 1);
     if (wrong !== correctAnswer) {
@@ -133,7 +131,6 @@ function handleAnswer(btn, selected, num1, num2) {
     message.textContent = '❌ Probeer het opnieuw!';
     btn.style.pointerEvents = 'none';
     wrongAttemptMade = true;
-
     recordMistake(num1, num2);
   }
 }
@@ -151,16 +148,12 @@ function showRandomSuccessImage() {
   const randomIndex = Math.floor(Math.random() * successImages.length);
   const imagePath = successImages[randomIndex];
 
-  const successImage = document.getElementById('successImage');
-  const overlay = document.getElementById('overlay');
   successImage.src = imagePath;
   successImage.classList.remove('hidden');
-  overlay.classList.remove('hidden');
+  document.getElementById('overlay').classList.remove('hidden');
 
   const fileName = imagePath.split('/').pop().replace(/\.(jpg|jpeg|png|webp)$/i, '');
   const soundPath = `sounds/${fileName}.mp3`;
-
-  const successSound = document.getElementById('successSound');
   successSound.src = soundPath;
   successSound.play().catch(err => {
     console.warn(`Could not play sound: ${soundPath}`, err);
@@ -168,7 +161,77 @@ function showRandomSuccessImage() {
 
   setTimeout(() => {
     successImage.classList.add('hidden');
-    overlay.classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
     generateQuestion();
   }, 2000);
+}
+
+// Stats modal + chart
+const showStatsBtn = document.getElementById('showStatsBtn');
+const statsModal = document.getElementById('statsModal');
+const closeStatsBtn = document.getElementById('closeStatsBtn');
+const statsChartCanvas = document.getElementById('statsChart');
+
+let statsChart = null;
+
+showStatsBtn.addEventListener('click', () => {
+  if (!currentNum2) {
+    alert("Selecteer eerst een tafel.");
+    return;
+  }
+
+  const currentTable = currentNum2;
+  const localStats = JSON.parse(localStorage.getItem('questionStats')) || {};
+
+  const labels = [];
+  const data = [];
+
+  for (let num1 = 0; num1 <= 10; num1++) {
+    const key = `${num1}x${currentTable}`;
+    labels.push(`${num1}×${currentTable}`);
+    data.push(localStats[key] || 0);
+  }
+
+  if (statsChart) {
+    statsChart.destroy();
+  }
+
+  statsChart = new Chart(statsChartCanvas, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: `Aantal fouten voor tafel ${currentTable}`,
+        data,
+        backgroundColor: 'rgba(255, 99, 132, 0.7)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
+    }
+  });
+
+  statsModal.classList.remove('hidden');
+});
+
+closeStatsBtn.addEventListener('click', () => {
+  statsModal.classList.add('hidden');
+});
+
+function resetStats() {
+  const password = prompt("Voer het wachtwoord in om de statistieken te resetten:");
+
+  if (password === "Zombie") {
+    localStorage.removeItem('questionStats');
+    alert("Statistieken succesvol gereset!");
+  } else if (password !== null) {
+    alert("Onjuist wachtwoord. Reset geannuleerd.");
+  }
 }

@@ -134,3 +134,45 @@ select {
     font-size: 1rem;
   }
 }
+
+#statsModal {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  height: auto;
+  background: white;
+  border: 2px solid black;
+  padding: 1rem;
+  box-shadow: 0 0 10px gray;
+  z-index: 1000;
+  text-align: center;
+  border-radius: 12px;
+}
+
+#statsChart {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 400px;
+}
+
+#statsModal.hidden {
+  display: none;
+}
+
+.styled-btn {
+  padding: 0.4rem 0.6rem;
+  margin: 0.3rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #eaeaea;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.styled-btn:hover {
+  background-color: #dcdcdc;
+}

@@ -29,6 +29,11 @@
       <div id="choices" class="choices"></div>
       <p id="message"></p>
     </div>
+
+    <div class="buttons" style="margin-top: 1.5rem;">
+      <button class="styled-btn" id="showStatsBtn">📊 Statistieken</button>
+      <button class="styled-btn" onclick="resetStats()">📉 Reset Statistieken</button>
+    </div>
   </div>
 
   <!-- Success Overlay & Media -->
@@ -36,6 +41,14 @@
   <img id="successImage" class="hidden" alt="Goed gedaan!">
   <audio id="successSound"></audio>
 
+  <!-- Stats Modal -->
+  <div id="statsModal" class="hidden">
+    <canvas id="statsChart" width="400" height="300"></canvas>
+    <button class="styled-btn" id="closeStatsBtn">Sluiten</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script2.js"></script>
 </body>
 </html>
