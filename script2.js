@@ -95,22 +95,40 @@ function generateQuestion() {
   correctAnswer = num1 * currentNum2;
   questionText.textContent = `Wat is ${num1} × ${currentNum2}?`;
 
-  const answers = new Set();
-  answers.add(correctAnswer);
-  while (answers.size < 3) {
-    const wrong = currentNum2 * (Math.floor(Math.random() * 10) + 1);
-    if (wrong !== correctAnswer) {
-      answers.add(wrong);
-    }
-  }
+  if (isInputMode) {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.placeholder = 'Typ je antwoord...';
+    input.className = 'styled-input';
+    input.autofocus = true;
 
-  [...answers].sort(() => Math.random() - 0.5).forEach(answer => {
-    const btn = document.createElement('div');
-    btn.textContent = answer;
-    btn.className = 'choice';
-    btn.addEventListener('click', () => handleAnswer(btn, answer, num1, currentNum2));
-    choicesDiv.appendChild(btn);
-  });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const typedValue = parseInt(input.value);
+        handleAnswer(input, typedValue, num1, currentNum2);
+      }
+    });
+
+    choicesDiv.appendChild(input);
+    input.focus();
+  } else {
+    const answers = new Set();
+    answers.add(correctAnswer);
+    while (answers.size < 3) {
+      const wrong = currentNum2 * (Math.floor(Math.random() * 10) + 1);
+      if (wrong !== correctAnswer) {
+        answers.add(wrong);
+      }
+    }
+
+    [...answers].sort(() => Math.random() - 0.5).forEach(answer => {
+      const btn = document.createElement('div');
+      btn.textContent = answer;
+      btn.className = 'choice';
+      btn.addEventListener('click', () => handleAnswer(btn, answer, num1, currentNum2));
+      choicesDiv.appendChild(btn);
+    });
+  }
 }
 
 function handleAnswer(btn, selected, num1, num2) {
@@ -253,3 +271,12 @@ bgColorPicker.addEventListener("input", (e) => {
   document.body.style.backgroundColor = color;
   localStorage.setItem("bgColor", color);
 });
+
+const modeToggle = document.getElementById("modeToggle");
+let isInputMode = true;
+
+document.getElementById('modeToggle').addEventListener('change', function () {
+  isInputMode = !this.checked; // ✅ Invert: checked = multiple choice
+  generateQuestion(); // Regenerate question in new mode
+});
+
