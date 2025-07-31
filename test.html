@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Firebase Realtime Test</title>
+</head>
+<body>
+  <h1>Send Data to Firebase</h1>
+  <input type="text" id="messageInput" placeholder="Type a message" />
+  <button onclick="sendMessage()">Send</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
+      authDomain: "willem-626ef.firebaseapp.com",
+      databaseURL: "https://willem-626ef-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "willem-626ef",
+      storageBucket: "willem-626ef.appspot.com",
+      messagingSenderId: "849432090624",
+      appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
+      measurementId: "G-VHRSJC5ZDK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.sendMessage = function() {
+      const message = document.getElementById("messageInput").value;
+      const messagesRef = ref(db, 'messages');
+      push(messagesRef, {
+        text: message,
+        timestamp: Date.now()
+      });
+      alert("Message sent!");
+    };
+  </script>
+</body>
+</html>
