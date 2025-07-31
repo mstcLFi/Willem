@@ -161,7 +161,15 @@ function handleAnswer(btn, selected, num1, num2) {
   } else {
     btn.classList.add('wrong');
     message.textContent = '❌ Probeer het opnieuw!';
-    btn.style.pointerEvents = 'none';
+
+    // If input mode, clear and refocus input
+    if (btn.tagName === 'INPUT') {
+      btn.value = '';
+      btn.focus();
+    } else {
+      btn.style.pointerEvents = 'none';
+    }
+
     wrongAttemptMade = true;
     recordMistake(num1, num2);
   }
@@ -301,3 +309,27 @@ function setVh() {
 window.addEventListener('resize', setVh);
 window.addEventListener('load', setVh);
 setVh();
+
+// Get the toggle switch element by its ID or class
+const toggleSwitch = document.getElementById('modeToggle');
+
+// Create audio objects for the two sounds
+const soundMultipleChoice = new Audio('sounds/Multiple Choice.mp3');
+const soundNormalInput = new Audio('sounds/Normal Input.mp3');
+
+// Add event listener for when the toggle switch changes
+toggleSwitch.addEventListener('change', () => {
+  if (toggleSwitch.checked) {
+    // Switch is ON - play Multiple Choice sound
+    soundMultipleChoice.currentTime = 0;  // rewind in case it was played before
+    soundMultipleChoice.play().catch(err => {
+      console.warn('Failed to play Multiple Choice sound', err);
+    });
+  } else {
+    // Switch is OFF - play Normal Input sound
+    soundNormalInput.currentTime = 0;
+    soundNormalInput.play().catch(err => {
+      console.warn('Failed to play Normal Input sound', err);
+    });
+  }
+});
