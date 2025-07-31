@@ -25,6 +25,16 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    window.sendMessage = function() {
+      const message = document.getElementById("messageInput").value;
+      const messagesRef = ref(db, 'messages');
+      push(messagesRef, {
+        text: message,
+        timestamp: Date.now()
+      });
+      alert("Message sent!");
+    };
+    
     const messagesRef = ref(db, 'messages');
     const last20Query = query(messagesRef, limitToLast(20));
 
