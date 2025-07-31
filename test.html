@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Last 20 Messages</title>
+  <title>Top 20 Scores</title>
 </head>
 <body>
-  <h1>Send Data to Firebase</h1>
-  <input type="text" id="messageInput" placeholder="Type a message" />
-  <button onclick="sendMessage()">Send</button>
-  
-  <h1>Last 20 Messages (Alphabetically)</h1>
-  <ul id="messageList"></ul>
+  <h1>Submit a Score</h1>
+  <input type="text" id="nameInput" placeholder="Enter your name" />
+  <input type="number" step="any" id="scoreInput" placeholder="Enter a score" />
+  <button onclick="submitScore()">Submit</button>
+
+  <h1>Top 20 Scores (High to Low)</h1>
+  <div id="scoreList"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-    import { getDatabase, ref, query, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    import { getDatabase, ref, query, limitToLast, onValue, push, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
@@ -28,36 +29,49 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const scoresRef = ref(db, 'scores');
 
-    window.sendMessage = function() {
-      const message = document.getElementById("messageInput").value;
-      const messagesRef = ref(db, 'messages');
-      push(messagesRef, {
-        text: message,
+    window.submitScore = function() {
+      const name = document.getElementById("nameInput").value.trim();
+      const score = parseFloat(document.getElementById("scoreInput").value);
+
+      if (!name || isNaN(score)) {
+        alert("Please enter a valid name and score.");
+        return;
+      }
+
+      push(scoresRef, {
+        name: name,
+        value: score,
         timestamp: Date.now()
       });
-      alert("Message sent!");
     };
-    
-    const messagesRef = ref(db, 'messages');
-    const last20Query = query(messagesRef, limitToLast(20));
 
-    onValue(last20Query, (snapshot) => {
-      const messages = [];
+    const topQuery = query(scoresRef, limitToLast(100));
+
+    onValue(topQuery, (snapshot) => {
+      const scores = [];
+
       snapshot.forEach(childSnapshot => {
-        messages.push(childSnapshot.val());
+        const val = childSnapshot.val();
+        scores.push({ key: childSnapshot.key, name: val.name, value: val.value });
       });
 
-      // Sort alphabetically by text
-      messages.sort((a, b) => a.text.localeCompare(b.text));
+      scores.sort((a, b) => b.value - a.value);
+      const top20 = scores.slice(0, 20);
 
-      // Display in the DOM
-      const list = document.getElementById("messageList");
+      const list = document.getElementById("scoreList");
       list.innerHTML = "";
-      messages.forEach(msg => {
-        const li = document.createElement("li");
-        li.textContent = msg.text;
-        list.appendChild(li);
+      top20.forEach(score => {
+        const div = document.createElement("div");
+        div.textContent = `${score.name}: ${score.value}`;
+        list.appendChild(div);
+      });
+
+      const toDelete = scores.slice(20);
+      toDelete.forEach(score => {
+        const scoreRef = ref(db, `scores/${score.key}`);
+        remove(scoreRef);
       });
     });
   </script>
