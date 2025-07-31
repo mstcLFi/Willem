@@ -126,12 +126,20 @@ function generateQuestion() {
     }
 
     [...answers].sort(() => Math.random() - 0.5).forEach(answer => {
-      const btn = document.createElement('div');
+      const btn = document.createElement('button');
       btn.textContent = answer;
       btn.className = 'choice';
       btn.addEventListener('click', () => handleAnswer(btn, answer, num1, currentNum2));
       choicesDiv.appendChild(btn);
     });
+  }
+}
+
+function reduceWeight(num1, num2) {
+  const key = `${num1}x${num2}`;
+  if (stats[key] && stats[key] > 0) {
+    stats[key]--;
+    localStorage.setItem('questionStats', JSON.stringify(stats));
   }
 }
 
@@ -142,6 +150,8 @@ function handleAnswer(btn, selected, num1, num2) {
     disableAllChoices();
 
     if (!wrongAttemptMade) {
+      // Perfect answer, reduce weight for this question
+      reduceWeight(num1, num2);
       showRandomSuccessImage();
     } else {
       setTimeout(() => {

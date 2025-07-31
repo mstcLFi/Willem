@@ -6,6 +6,7 @@ html, body {
   overflow-x: hidden;   /* prevent horizontal scrollbar */
   box-sizing: border-box;
   font-family: 'Arial', sans-serif;
+  font-size: 22px;
   background-color: #f4f4f4;
   text-align: center;
 }
