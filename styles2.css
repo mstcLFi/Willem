@@ -1,34 +1,47 @@
-/* Base styles */
-body {
+/* Reset and base styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;   /* prevent horizontal scrollbar */
+  box-sizing: border-box;
   font-family: 'Arial', sans-serif;
   background-color: #f4f4f4;
   text-align: center;
-  margin: 0;
-  padding: 1rem;
-  box-sizing: border-box;
 }
 
+/* Make box-sizing inherit everywhere */
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* Body padding for margin around container */
+body {
+  padding: 1rem;
+}
+
+/* Wrapper container */
 .relative-wrapper {
   position: relative;
-  width: 90vw;       /* 90% of viewport width */
-  max-width: 700px;  /* Optional max width for big screens */
-  height: 90vh;      /* 90% of viewport height */
-  margin: 2vh auto;  /* vertical margin and horizontally centered */
-  box-sizing: border-box;
-  background: white; /* ensure background covers area */
+  width: 90vw;          /* 90% of viewport width */
+  max-width: 700px;     /* max width for big screens */
+  height: calc(var(--vh, 1vh) * 90); /* 90% of viewport height, adjusted dynamically */
+  margin: 2vh auto;     /* vertical margin, horizontally centered */
+  background: white;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  overflow-y: auto;  /* scroll if content taller than viewport */
+  overflow-y: auto;     /* scroll if content overflows vertically */
   padding: 1rem 1.5rem;
 }
 
+/* Inner container fills wrapper */
 .container {
-  width: 100%;      /* fill the wrapper */
-  height: auto;     /* content determines height */
+  width: 100%;
+  height: 100%;          /* fill the relative-wrapper */
   box-sizing: border-box;
-  /* no extra margins needed here */
 }
 
+/* Headings and labels */
 h1 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
@@ -91,7 +104,7 @@ select {
   min-height: 1.5rem;
 }
 
-/* Overlay and success image positioned over container */
+/* Overlay and success image */
 #overlay {
   position: absolute;
   top: 0;
@@ -120,7 +133,7 @@ select {
   display: none;
 }
 
-/* Responsive adjustments for smaller screens */
+/* Responsive */
 @media (max-width: 600px) {
   .container {
     padding: 1rem;
@@ -148,6 +161,7 @@ select {
   }
 }
 
+/* Modal */
 #statsModal {
   position: fixed;
   top: 10%;

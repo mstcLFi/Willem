@@ -105,6 +105,10 @@ function generateQuestion() {
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const typedValue = parseInt(input.value);
+        if (isNaN(typedValue)) {
+          message.textContent = "Voer een geldig nummer in!";
+          return;
+        }
         handleAnswer(input, typedValue, num1, currentNum2);
       }
     });
@@ -280,3 +284,10 @@ document.getElementById('modeToggle').addEventListener('change', function () {
   generateQuestion(); // Regenerate question in new mode
 });
 
+function setVh() {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+window.addEventListener('resize', setVh);
+window.addEventListener('load', setVh);
+setVh();
