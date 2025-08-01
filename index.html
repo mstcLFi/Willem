@@ -1,54 +1,67 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Tafels Oefenen</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Willem's tafelspelletjes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .tile {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: black;
+        }
+        .tile img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+        .tile:hover img {
+            filter: grayscale(0%);
+        }
+        .tile-title {
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .tile img {
+                height: 120px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="top-buttons">
-    <a href="practice.html" class="oefenen-button">Oefenen</a>
-    <a href="multiplicationrace.html" class="oefenen-button">Online scores</a>
-  </div>
-  <div class="overlay"></div>
-
-  <div id="leaderboard">
-    <h2>🏆 Top 5</h2>
-    <ol id="leaderboardList"></ol>
-  </div>
-
-  <h1>Tafels Oefenen</h1>
-
-  <div class="tafel-selectie">
-    <p>Kies de tafels waarmee je wilt oefenen:</p>
-    <div id="tafelCheckboxes"></div>
-  </div>
-
-  <button id="startBtn">Start spel</button>
-  <button id="resetHighscoreBtn">Vergeet highscores</button>
-  <div id="timer">⏳ Tijd over: 03:00</div>
-
-  <div class="image-wrapper">
-    <img id="afbeelding" src="" alt="Afbeelding" />
-  </div>
-
-  <div id="question">Klik op 'Start spel' om te beginnen.</div>
-  <input type="number" id="answer" placeholder="Antwoord" autocomplete="off" disabled />
-  <br />
-  <button id="submit" disabled>Controleer</button>
-
-  <div id="feedback"></div>
-
-  <div id="scoreboard">
-    Speler: <span id="spelerNaam">-</span><br />
-    Huidige score: <span id="score">0.0</span><br />
-    Hoogste score: <span id="highscore">0.0</span> (<span id="highscorer">niemand</span>)
-  </div>
-
-  <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
-  <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
-
-  <script src="script.js"></script>
+    <div class="container">
+        <a href="brainrotstyle.html" class="tile">
+            <img src="brainrot images/chimpanzini bananini.webp" alt="Oefenen" style="object-position: top center;">
+            <div class="tile-title">Oefenen</div>
+        </a>
+        <a href="minecraftstyle.html" class="tile">
+            <img src="minecraft images/4.jpg" alt="Lokale competitie" style="object-position: top center;">
+            <div class="tile-title">Lokale competitie</div>
+        </a>
+        <a href="multiplicationrace.html" class="tile">
+            <img src="brainrot images/tralalero tralala.webp" alt="Online competitie" style="object-position: center;">
+            <div class="tile-title">Online competitie</div>
+        </a>
+        <!-- Voeg hier meer tegels toe -->
+    </div>
 </body>
 </html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tafels Oefenen</title>
+  <link rel="stylesheet" href="mcstyles.css" />
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div id="leaderboard">
+    <h2>🏆 Top 5</h2>
+    <ol id="leaderboardList"></ol>
+  </div>
+
+  <h1>Tafels Oefenen</h1>
+
+  <div class="tafel-selectie">
+    <p>Kies de tafels waarmee je wilt oefenen:</p>
+    <div id="tafelCheckboxes"></div>
+  </div>
+
+  <button id="startBtn">Start spel</button>
+  <button id="resetHighscoreBtn">Vergeet highscores</button>
+  <div id="timer">⏳ Tijd over: 03:00</div>
+
+  <div class="image-wrapper">
+    <img id="afbeelding" src="" alt="Afbeelding" />
+  </div>
+
+  <div id="question">Klik op 'Start spel' om te beginnen.</div>
+  <input type="number" id="answer" placeholder="Antwoord" autocomplete="off" disabled />
+  <br />
+  <button id="submit" disabled>Controleer</button>
+
+  <div id="feedback"></div>
+
+  <div id="scoreboard">
+    Speler: <span id="spelerNaam">-</span><br />
+    Huidige score: <span id="score">0.0</span><br />
+    Hoogste score: <span id="highscore">0.0</span> (<span id="highscorer">niemand</span>)
+  </div>
+
+  <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
+
+  <script src="mcscript.js"></script>
+</body>
+</html>

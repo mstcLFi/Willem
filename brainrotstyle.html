@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Oefen Tafels</title>
+  <link rel="stylesheet" href="brstyles.css">
+</head>
+<body>
+  <label for="bgColorPicker">Achtergrondkleur:</label>
+  <input type="color" id="bgColorPicker" />
+
+  <div class="container">
+    <h1>Oefen Tafels</h1>
+
+    <label for="tableSelect">Kies een tafel:</label>
+    <select id="tableSelect">
+      <option value="">--Kies--</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+      <option value="10">10</option>
+    </select>
+
+    <div id="questionBox" class="hidden">
+      <p id="questionText"></p>
+      <div id="choices" class="choices"></div>
+      <p id="message"></p>
+    </div>
+
+    <div class="buttons" style="margin-top: 1.5rem;">
+      <button class="styled-btn" id="showStatsBtn">📊 Statistieken</button>
+      <button class="styled-btn" onclick="resetStats()">📉 Reset Statistieken</button>
+    </div>
+  </div>
+
+  <!-- Success Overlay & Media -->
+  <div id="overlay" class="hidden"></div>
+  <img id="successImage" class="hidden" alt="Goed gedaan!">
+  <audio id="successSound"></audio>
+
+  <!-- Stats Modal -->
+  <div id="statsModal" class="hidden">
+    <canvas id="statsChart" width="400" height="300"></canvas>
+    <button class="styled-btn" id="closeStatsBtn">Sluiten</button>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="brscript.js"></script>
+</body>
+</html>
