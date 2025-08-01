@@ -2,70 +2,7 @@
 <html>
 <head>
   <title>Tafels oefenen</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f0f4f8;
-      text-align: center;
-      padding: 40px;
-    }
-
-    h1 {
-      color: #333;
-      margin-bottom: 10px;
-    }
-
-    #startBtn, #changeNameBtn {
-      background-color: #007BFF;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin: 10px;
-    }
-
-    #startBtn:hover, #changeNameBtn:hover {
-      background-color: #0056b3;
-    }
-
-    input[type="number"] {
-      padding: 10px;
-      font-size: 16px;
-      width: 200px;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-
-    #quizSection, #scoreList {
-      margin-top: 30px;
-    }
-
-    #feedback {
-      margin-top: 10px;
-      color: red;
-      font-weight: bold;
-    }
-
-    #playerNameDisplay {
-      font-size: 18px;
-      margin-top: 10px;
-      color: #444;
-    }
-
-    #timer {
-      font-size: 20px;
-      font-weight: bold;
-      margin-top: 10px;
-      color: #222;
-    }
-
-    #scoreList div {
-      margin: 3px 0;
-    }
-  </style>
+  <link rel="stylesheet" href="styles3.css">
 </head>
 <body>
   <h1>Tafels oefenen</h1>
@@ -83,6 +20,13 @@
 
   <h1>Top 20 Scores</h1>
   <div id="scoreList"></div>
+
+  <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
+  <!--
+  <button onclick="document.getElementById('correctSound').play()">🔊 Test Success Sound</button>
+  <button onclick="document.getElementById('wrongSound').play()">🔊 Test Wrong Sound</button>
+  -->
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
@@ -108,6 +52,8 @@
     let timerInterval;
     let timeLeft = 120; // 2 minutes
     let feedbackLocked = false; // prevents clearing feedback until next answer
+    const correctSound = document.getElementById("correctSound");
+    const wrongSound = document.getElementById("wrongSound");
 
     function updatePlayerNameDisplay() {
       document.getElementById("playerNameDisplay").textContent = `Speler: ${playerName}`;
@@ -149,7 +95,11 @@
 
     function endGame(timeUp = false) {
       const correctAnswer = num1 * num2;
+
+      // 🔊 Play wrong sound only if the answer was wrong (not time-up)
       if (!timeUp) {
+        wrongSound.currentTime = 0;
+        wrongSound.play();
         document.getElementById("feedback").textContent =
           `Fout! ${num1} × ${num2} = ${correctAnswer}. Je score is opgeslagen: ${currentScore}`;
       } else {
@@ -157,6 +107,7 @@
           `Tijd is om! Je score is opgeslagen: ${currentScore}`;
       }
 
+      // Save score
       push(scoresRef, {
         name: playerName,
         value: currentScore,
@@ -169,7 +120,7 @@
       currentScore = 0;
       document.getElementById("currentScore").textContent = currentScore;
 
-      feedbackLocked = true; // 🔴 Don't clear feedback yet
+      feedbackLocked = true; // Don't clear feedback until next correct answer
       generateQuestion();
     }
 
@@ -186,6 +137,9 @@
         if (!timerInterval) {
           startTimer();
         }
+
+        correctSound.currentTime = 0;
+        correctSound.play();
 
         generateQuestion();
       } else {
