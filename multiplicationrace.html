@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tafels oefenen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    #startBtn, #changeNameBtn {
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    #startBtn:hover, #changeNameBtn:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #quizSection, #scoreList {
+      margin-top: 30px;
+    }
+
+    #feedback {
+      margin-top: 10px;
+      color: red;
+      font-weight: bold;
+    }
+
+    #playerNameDisplay {
+      font-size: 18px;
+      margin-top: 10px;
+      color: #444;
+    }
+
+    #timer {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #222;
+    }
+
+    #scoreList div {
+      margin: 3px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tafels oefenen</h1>
+  <div id="playerNameDisplay"></div>
+  <button id="startBtn">Start</button>
+  <button id="changeNameBtn" style="display:none;">Naam wijzigen</button>
+
+  <div id="quizSection" style="display:none;">
+    <p id="question"></p>
+    <input type="number" id="answerInput" placeholder="Jouw antwoord" />
+    <p>Punten: <span id="currentScore">0</span></p>
+    <p id="timer">Tijd: 02:00</p>
+    <p id="feedback"></p>
+  </div>
+
+  <h1>Top 20 Scores</h1>
+  <div id="scoreList"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, query, limitToLast, onValue, push, remove } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuNAgmLLdBYClhpe5fMKQjnaFbXimushU",
+      authDomain: "willem-626ef.firebaseapp.com",
+      databaseURL: "https://willem-626ef-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "willem-626ef",
+      storageBucket: "willem-626ef.appspot.com",
+      messagingSenderId: "849432090624",
+      appId: "1:849432090624:web:1fa4f458e25313d7f0e0e5",
+      measurementId: "G-VHRSJC5ZDK"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const scoresRef = ref(db, 'scores');
+
+    let num1, num2, currentScore = 0;
+    let playerName = "";
+    let timerInterval;
+    let timeLeft = 120; // 2 minutes
+    let feedbackLocked = false; // prevents clearing feedback until next answer
+
+    function updatePlayerNameDisplay() {
+      document.getElementById("playerNameDisplay").textContent = `Speler: ${playerName}`;
+    }
+
+    function generateQuestion() {
+      num1 = Math.floor(Math.random() * 10) + 1;
+      num2 = Math.floor(Math.random() * 10) + 1;
+      document.getElementById("question").textContent = `Wat is ${num1} × ${num2}?`;
+      document.getElementById("answerInput").value = '';
+      document.getElementById("answerInput").focus();
+    }
+
+    function formatTime(seconds) {
+      const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      return `${mins}:${secs}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById("timer").textContent = `Tijd: ${formatTime(timeLeft)}`;
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      timeLeft = 120;
+      updateTimerDisplay();
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          endGame(true);
+        }
+      }, 1000);
+    }
+
+    function endGame(timeUp = false) {
+      const correctAnswer = num1 * num2;
+      if (!timeUp) {
+        document.getElementById("feedback").textContent =
+          `Fout! ${num1} × ${num2} = ${correctAnswer}. Je score is opgeslagen: ${currentScore}`;
+      } else {
+        document.getElementById("feedback").textContent =
+          `Tijd is om! Je score is opgeslagen: ${currentScore}`;
+      }
+
+      push(scoresRef, {
+        name: playerName,
+        value: currentScore,
+        timestamp: Date.now()
+      });
+
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timeLeft = 120;
+      currentScore = 0;
+      document.getElementById("currentScore").textContent = currentScore;
+
+      feedbackLocked = true; // 🔴 Don't clear feedback yet
+      generateQuestion();
+    }
+
+    window.checkAnswer = function () {
+      const answer = parseInt(document.getElementById("answerInput").value);
+      if (isNaN(answer)) return;
+
+      if (answer === num1 * num2) {
+        currentScore++;
+        document.getElementById("currentScore").textContent = currentScore;
+        document.getElementById("feedback").textContent = '';
+
+        // Start timer if it's not already running
+        if (!timerInterval) {
+          startTimer();
+        }
+
+        generateQuestion();
+      } else {
+        endGame(false); // Wrong answer
+      }
+    };
+
+    function promptForName() {
+      const nameInput = prompt("Wat is je naam?");
+      if (!nameInput || nameInput.trim() === "") {
+        alert("Naam is verplicht.");
+        return false;
+      }
+      playerName = nameInput.trim();
+      updatePlayerNameDisplay();
+      return true;
+    }
+
+    document.getElementById("startBtn").addEventListener("click", () => {
+      if (promptForName()) {
+        document.getElementById("startBtn").style.display = "none";
+        document.getElementById("changeNameBtn").style.display = "inline-block";
+        document.getElementById("quizSection").style.display = "block";
+        document.getElementById("scoreList").style.display = "block";
+        currentScore = 0;
+        document.getElementById("currentScore").textContent = currentScore;
+        document.getElementById("feedback").textContent = '';
+        generateQuestion();
+      }
+    });
+
+    document.getElementById("changeNameBtn").addEventListener("click", () => {
+      clearInterval(timerInterval);
+      if (promptForName()) {
+        currentScore = 0;
+        document.getElementById("currentScore").textContent = currentScore;
+        document.getElementById("feedback").textContent = '';
+        generateQuestion();
+      }
+    });
+
+    document.getElementById("answerInput").addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        checkAnswer();
+      }
+    });
+
+    const topQuery = query(scoresRef, limitToLast(100));
+    onValue(topQuery, (snapshot) => {
+      const scores = [];
+      snapshot.forEach(childSnapshot => {
+        const val = childSnapshot.val();
+        scores.push({ key: childSnapshot.key, name: val.name, value: val.value });
+      });
+
+      scores.sort((a, b) => b.value - a.value);
+      const top20 = scores.slice(0, 20);
+
+      const list = document.getElementById("scoreList");
+      list.innerHTML = "";
+      top20.forEach(score => {
+        const div = document.createElement("div");
+        div.textContent = `${score.name}: ${score.value}`;
+        list.appendChild(div);
+      });
+
+      const toDelete = scores.slice(20);
+      toDelete.forEach(score => {
+        const scoreRef = ref(db, `scores/${score.key}`);
+        remove(scoreRef);
+      });
+    });
+  </script>
+</body>
+</html>

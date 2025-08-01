@@ -132,21 +132,25 @@ body {
   z-index: -1;
 }
 
-.oefenen-button {
+.top-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
   position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 10px 16px;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: background-color 0.3s;
-  z-index: 1000;
+  top: 0;
+  right: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.oefenen-button:hover {
-  background-color: #0056b3;
+.oefenen-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #4CAF50;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 16px;
 }
+
