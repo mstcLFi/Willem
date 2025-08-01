@@ -5,21 +5,30 @@
   <link rel="stylesheet" href="styles3.css">
 </head>
 <body>
-  <h1>Tafels oefenen</h1>
-  <div id="playerNameDisplay"></div>
-  <button id="startBtn">Start</button>
-  <button id="changeNameBtn" style="display:none;">Naam wijzigen</button>
+  <div id="mainContainer">
+    <div id="gameBox" class="contentBox">
+      <label for="bgColorPicker">Achtergrondkleur:</label>
+      <input type="color" id="bgColorPicker" />
 
-  <div id="quizSection" style="display:none;">
-    <p id="question"></p>
-    <input type="number" id="answerInput" placeholder="Jouw antwoord" />
-    <p>Punten: <span id="currentScore">0</span></p>
-    <p id="timer">Tijd: 02:00</p>
-    <p id="feedback"></p>
+      <h1>Tafels oefenen</h1>
+      <div id="playerNameDisplay"></div>
+      <button id="startBtn">Start</button>
+      <button id="changeNameBtn" style="display:none;">Naam wijzigen</button>
+
+      <div id="quizSection" style="display:none;">
+        <p id="question"></p>
+        <input type="number" id="answerInput" placeholder="Jouw antwoord" />
+        <p>Punten: <span id="currentScore">0</span></p>
+        <p id="timer">Tijd: 02:00</p>
+        <p id="feedback"></p>
+      </div>
+    </div>
+
+    <div id="scoreBox" class="contentBox">
+      <h2>Top 20 Scores</h2>
+      <div id="scoreList"></div>
+    </div>
   </div>
-
-  <h1>Top 20 Scores</h1>
-  <div id="scoreList"></div>
 
   <audio id="correctSound" src="sounds/success.mp3" preload="auto"></audio>
   <audio id="wrongSound" src="sounds/wrong.mp3" preload="auto"></audio>
@@ -211,6 +220,22 @@
         const scoreRef = ref(db, `scores/${score.key}`);
         remove(scoreRef);
       });
+    });
+
+    // Load saved background color on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedColor = localStorage.getItem("bgColor");
+      if (savedColor) {
+        document.body.style.backgroundColor = savedColor;
+        bgColorPicker.value = savedColor;
+      }
+    });
+
+    // Update background color when user selects a new one
+    bgColorPicker.addEventListener("input", (e) => {
+      const color = e.target.value;
+      document.body.style.backgroundColor = color;
+      localStorage.setItem("bgColor", color);
     });
   </script>
 </body>

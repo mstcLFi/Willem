@@ -5,11 +5,20 @@ body {
   background-color: #f0f4f8;
   text-align: center;
   padding: 40px;
+  margin: 0;
+  display: flex;
+  justify-content: center;
 }
 
 h1 {
   color: #333;
   margin-bottom: 10px;
+}
+
+#question {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
 #startBtn, #changeNameBtn {
@@ -34,6 +43,7 @@ input[type="number"] {
   margin-top: 10px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  text-align: center; /* ✅ This centers the placeholder and the typed number */
 }
 
 #quizSection, #scoreList {
@@ -61,4 +71,42 @@ input[type="number"] {
 
 #scoreList div {
   margin: 3px 0;
+}
+
+/* NEW layout for two boxes side by side */
+#mainContainer {
+  display: flex;
+  flex-direction: column; /* 🔁 Stack vertically */
+  gap: 20px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.contentBox {
+  background: #ffffffdd;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  flex: 1 1 400px;
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+#gameBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#scoreBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Optional: Hide scrollbars in score list if you add overflow */
+#scoreList {
+  max-height: 400px;
+  overflow-y: auto;
 }
