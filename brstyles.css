@@ -8,16 +8,6 @@ body {
   box-sizing: border-box;
 }
 
-.container {
-  max-width: 600px;
-  margin: auto;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-}
-
 h1 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
@@ -80,18 +70,30 @@ select {
   min-height: 1.5rem;
 }
 
+.container {
+  max-width: 600px;
+  margin: auto;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative; /* Required to confine overlay */
+}
+
 #overlay {
-  position: fixed;
+  position: absolute; /* Confined within .container */
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
+  border-radius: 12px; /* Match container corners */
 }
 
 #successImage {
-  position: fixed;
+  position: absolute; /* Confined within #overlay */
   top: 50%;
   left: 50%;
   max-width: 80%;
@@ -105,7 +107,6 @@ select {
 .hidden {
   display: none;
 }
-
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 600px) {

@@ -9,6 +9,7 @@ const successSound = document.getElementById('successSound');
 let currentNum2 = null;
 let correctAnswer = null;
 let wrongAttemptMade = false;
+let tempWeights = {}; // Holds temporary per-session weights
 
 let stats = JSON.parse(localStorage.getItem('questionStats')) || {};
 
@@ -64,8 +65,9 @@ function weightedRandomQuestion(table) {
   const questions = [];
   for (let i = 1; i <= 10; i++) {
     const key = `${i}x${table}`;
-    const weight = (stats[key] || 0) + 1;
-    questions.push({ num1: i, weight });
+    const statWeight = (stats[key] || 0) + 1;
+    const sessionWeight = tempWeights[key] ?? statWeight;
+    questions.push({ num1: i, weight: sessionWeight });
   }
 
   const totalWeight = questions.reduce((sum, q) => sum + q.weight, 0);
@@ -80,9 +82,42 @@ function weightedRandomQuestion(table) {
 
 function recordMistake(num1, num2) {
   const key = `${num1}x${num2}`;
-  if (!stats[key]) stats[key] = 0;
-  stats[key]++;
+  const previousStat = stats[key] || 0;
+  const baseWeightBefore = previousStat + 1; // store this before increasing
+
+  stats[key] = previousStat + 1;
   localStorage.setItem('questionStats', JSON.stringify(stats));
+
+  if (tempWeights[key] === undefined) {
+    tempWeights[key] = baseWeightBefore + 1;
+  } else {
+    tempWeights[key] += 1;
+  }
+}
+
+function rewardCorrectAnswer(num1, num2) {
+  const key = `${num1}x${num2}`;
+  const baseWeight = (stats[key] || 0) + 1;
+
+  if (tempWeights[key] !== undefined) {
+    if (tempWeights[key] > 1) {
+      // Decrease weight by 1 but never below 1
+      tempWeights[key] = Math.max(1, tempWeights[key] - 1);
+    }
+  } else {
+    // Initialize tempWeights to baseWeight if undefined
+    tempWeights[key] = baseWeight;
+  }
+}
+
+function logCurrentWeights(table) {
+  console.log(`📊 Weights for table ${table}:`);
+  for (let i = 1; i <= 10; i++) {
+    const key = `${i}x${table}`;
+    const base = (stats[key] || 0) + 1;
+    const weight = tempWeights[key] ?? base;
+    console.log(`${key}: weight=${weight}`);
+  }
 }
 
 function generateQuestion() {
@@ -120,12 +155,15 @@ function handleAnswer(btn, selected, num1, num2) {
     disableAllChoices();
 
     if (!wrongAttemptMade) {
+      rewardCorrectAnswer(num1, num2);
       showRandomSuccessImage();
     } else {
       setTimeout(() => {
         generateQuestion();
       }, 2000);
     }
+
+    logCurrentWeights(num2);
   } else {
     btn.classList.add('wrong');
     message.textContent = '❌ Probeer het opnieuw!';
@@ -148,25 +186,28 @@ function showRandomSuccessImage() {
   const randomIndex = Math.floor(Math.random() * successImages.length);
   const imagePath = successImages[randomIndex];
 
-  successImage.src = imagePath;
-  successImage.classList.remove('hidden');
-  document.getElementById('overlay').classList.remove('hidden');
+  const overlay = document.getElementById('overlay');
+  const image = document.getElementById('successImage');
+  const sound = document.getElementById('successSound');
+
+  image.src = imagePath;
+  image.classList.remove('hidden');
+  overlay.classList.remove('hidden');
 
   const fileName = imagePath.split('/').pop().replace(/\.(jpg|jpeg|png|webp)$/i, '');
   const soundPath = `sounds/${fileName}.mp3`;
-  successSound.src = soundPath;
-  successSound.play().catch(err => {
+  sound.src = soundPath;
+  sound.play().catch(err => {
     console.warn(`Could not play sound: ${soundPath}`, err);
   });
 
   setTimeout(() => {
-    successImage.classList.add('hidden');
-    document.getElementById('overlay').classList.add('hidden');
+    image.classList.add('hidden');
+    overlay.classList.add('hidden');
     generateQuestion();
   }, 2000);
 }
 
-// Stats modal + chart
 const showStatsBtn = document.getElementById('showStatsBtn');
 const statsModal = document.getElementById('statsModal');
 const closeStatsBtn = document.getElementById('closeStatsBtn');
@@ -229,8 +270,20 @@ function resetStats() {
   const password = prompt("Voer het wachtwoord in om de statistieken te resetten:");
 
   if (password === "Zombie") {
-    localStorage.removeItem('questionStats');
+    // Clear persistent statistics
+    stats = {};
+    localStorage.setItem('questionStats', JSON.stringify(stats));
+
+    // Clear temporary weights
+    tempWeights = {};
+
+    // Clear graph history if used
+    localStorage.removeItem('questionHistory');
+
     alert("Statistieken succesvol gereset!");
+
+    // Optionally regenerate a fresh question
+    generateQuestion();
   } else if (password !== null) {
     alert("Onjuist wachtwoord. Reset geannuleerd.");
   }
@@ -238,7 +291,6 @@ function resetStats() {
 
 const bgColorPicker = document.getElementById("bgColorPicker");
 
-// Load saved background color on page load
 window.addEventListener("DOMContentLoaded", () => {
   const savedColor = localStorage.getItem("bgColor");
   if (savedColor) {
@@ -247,7 +299,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Update background color when user selects a new one
 bgColorPicker.addEventListener("input", (e) => {
   const color = e.target.value;
   document.body.style.backgroundColor = color;

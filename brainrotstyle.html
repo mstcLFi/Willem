@@ -9,6 +9,7 @@
   <div class="container">
     <label for="bgColorPicker">Achtergrondkleur:</label>
     <input type="color" id="bgColorPicker" />
+
     <h1>Oefen Tafels</h1>
 
     <label for="tableSelect">Kies een tafel:</label>
@@ -36,11 +37,14 @@
       <button class="styled-btn" id="showStatsBtn">📊 Statistieken</button>
       <button class="styled-btn" onclick="resetStats()">📉 Reset Statistieken</button>
     </div>
+
+    <!-- Confined Overlay & Image -->
+    <div id="overlay" class="hidden">
+      <img id="successImage" class="hidden" alt="Goed gedaan!">
+    </div>
   </div>
 
-  <!-- Success Overlay & Media -->
-  <div id="overlay" class="hidden"></div>
-  <img id="successImage" class="hidden" alt="Goed gedaan!">
+  <!-- Audio outside container is OK -->
   <audio id="successSound"></audio>
 
   <!-- Stats Modal -->
