@@ -184,7 +184,21 @@
       startGame();
     });
 
-    restartBtn.addEventListener("click", startGame);
+    restartBtn.addEventListener("click", () => {
+      // Re-fetch current input values (in case they were changed mid-game)
+      const name1 = player1Input.value.trim() || "Speler 1";
+      const name2 = player2Input.value.trim() || "Speler 2";
+      const color1 = player1ColorInput.value || "#e34f4f";
+      const color2 = player2ColorInput.value || "#68dfa7";
+
+      playerNames = { 1: name1, 2: name2 };
+      playerColors = { 1: color1, 2: color2 };
+
+      name1El.textContent = name1;
+      name2El.textContent = name2;
+      scoreboard.style.display = "block";
+      startGame();
+    });
 
     function generateUniquePairs() {
       const pairs = [];
@@ -307,6 +321,7 @@
       renderCards();
       updateScore();
       updateTurn();
+      winnerMessage.style.display = "none";
     }
   </script>
 </body>
