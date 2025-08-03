@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vermenigvuldigings Memory Spel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      transition: background-color 0.5s ease;
+      background-color: #ccc;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    #game {
+      display: grid;
+      grid-template-columns: repeat(4, 120px);
+      grid-gap: 15px;
+      justify-content: center;
+      margin: 30px auto;
+      position: relative;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+      background-color: white;
+    }
+
+    .card:not(.flipped)::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: var(--card-back-image);
+      background-size: cover;
+      background-position: center;
+      border-radius: 10px;
+      z-index: 1;
+    }
+
+    .card.flipped {
+      background: #d0f0d0;
+      z-index: 2;
+    }
+
+    .card.flipped::before {
+      display: none;
+    }
+
+    #scoreboard {
+      margin-top: 20px;
+    }
+
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #playerInputs {
+      margin-top: 20px;
+    }
+
+    input[type="text"], input[type="color"] {
+      padding: 5px;
+      margin: 5px;
+      font-size: 16px;
+    }
+
+    #winnerMessage {
+      position: absolute;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 1px solid #aaa;
+      padding: 20px 40px;
+      font-size: 24px;
+      display: none;
+      z-index: 5;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      border-radius: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Vermenigvuldigings Memory Spel</h1>
+
+  <div id="playerInputs">
+    <input type="text" id="player1Name" placeholder="Naam speler 1" />
+    <input type="color" id="player1Color" value="#e34f4f" />
+    <input type="text" id="player2Name" placeholder="Naam speler 2" />
+    <input type="color" id="player2Color" value="#68dfa7" />
+    <button id="startBtn">Start spel</button>
+    <button id="restartBtn" style="display:none;">Herstart spel</button>
+  </div>
+
+  <div id="scoreboard" style="display:none;">
+    <p><span id="name1">Speler 1</span>: <span id="score1">0</span> | <span id="name2">Speler 2</span>: <span id="score2">0</span></p>
+    <p>Beurt van: <span id="turn">Speler 1</span></p>
+  </div>
+
+  <div id="game">
+    <div id="winnerMessage"></div>
+  </div>
+
+  <audio id="successSound" src="sounds/success.mp3"></audio>
+  <audio id="wrongSound" src="sounds/wrong2.mp3"></audio>
+  <audio id="winnerSound" src="sounds/winner.mp3"></audio>
+
+  <script>
+    const gameContainer = document.getElementById("game");
+    const score1El = document.getElementById("score1");
+    const score2El = document.getElementById("score2");
+    const turnEl = document.getElementById("turn");
+    const name1El = document.getElementById("name1");
+    const name2El = document.getElementById("name2");
+    const player1Input = document.getElementById("player1Name");
+    const player2Input = document.getElementById("player2Name");
+    const player1ColorInput = document.getElementById("player1Color");
+    const player2ColorInput = document.getElementById("player2Color");
+    const startBtn = document.getElementById("startBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const scoreboard = document.getElementById("scoreboard");
+    const winnerMessage = document.getElementById("winnerMessage");
+
+    const cardBackImages = [
+      "brainrot images/cappuccino assassino.jpg",
+      "brainrot images/tralalero tralala.webp",
+      "brainrot images/chimpanzini bananini.webp"
+    ];
+    const selectedCardBack = cardBackImages[Math.floor(Math.random() * cardBackImages.length)];
+    document.documentElement.style.setProperty('--card-back-image', `url("${selectedCardBack}")`);
+
+    let cards = [];
+    let flippedCards = [];
+    let matchedPairs = 0;
+    let playerTurn = 1;
+    let scores = { 1: 0, 2: 0 };
+    let playerNames = { 1: "Speler 1", 2: "Speler 2" };
+    let playerColors = { 1: "#e34f4f", 2: "#68dfa7" };
+    let gameActive = false;
+    let nextStartingPlayer = 1;
+
+    startBtn.addEventListener("click", () => {
+      const name1 = player1Input.value.trim() || "Speler 1";
+      const name2 = player2Input.value.trim() || "Speler 2";
+      const color1 = player1ColorInput.value || "#e34f4f";
+      const color2 = player2ColorInput.value || "#68dfa7";
+
+      playerNames = { 1: name1, 2: name2 };
+      playerColors = { 1: color1, 2: color2 };
+
+      name1El.textContent = name1;
+      name2El.textContent = name2;
+      scoreboard.style.display = "block";
+      startBtn.style.display = "none";
+      restartBtn.style.display = "inline-block";
+      startGame();
+    });
+
+    restartBtn.addEventListener("click", startGame);
+
+    function generateUniquePairs() {
+      const pairs = [];
+      const usedAnswers = new Set();
+
+      while (pairs.length < 8) {
+        const a = Math.floor(Math.random() * 10) + 1;
+        const b = Math.floor(Math.random() * 10) + 1;
+        const answer = a * b;
+
+        if (!usedAnswers.has(answer)) {
+          usedAnswers.add(answer);
+          pairs.push({ question: `${a} × ${b}`, answer: `${answer}` });
+        }
+      }
+
+      return pairs;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createCards() {
+      const pairs = generateUniquePairs();
+      const tempCards = [];
+      pairs.forEach((pair, index) => {
+        tempCards.push({ id: index + "q", content: pair.question, pairId: index });
+        tempCards.push({ id: index + "a", content: pair.answer, pairId: index });
+      });
+      shuffle(tempCards);
+      cards = tempCards;
+    }
+
+    function renderCards() {
+      gameContainer.innerHTML = '<div id="winnerMessage"></div>';
+      cards.forEach(card => {
+        const cardEl = document.createElement("div");
+        cardEl.classList.add("card");
+        cardEl.dataset.id = card.id;
+        cardEl.dataset.pairId = card.pairId;
+        cardEl.textContent = "";
+        cardEl.addEventListener("click", () => {
+          if (gameActive) flipCard(cardEl, card);
+        });
+        gameContainer.appendChild(cardEl);
+      });
+    }
+
+    function flipCard(cardEl, card) {
+      if (flippedCards.length === 2 || cardEl.classList.contains("flipped")) return;
+
+      cardEl.textContent = card.content;
+      cardEl.classList.add("flipped");
+      flippedCards.push({ el: cardEl, data: card });
+
+      if (flippedCards.length === 2) {
+        const [first, second] = flippedCards;
+        if (first.data.pairId === second.data.pairId && first.data.id !== second.data.id) {
+          document.getElementById("successSound").play();
+          scores[playerTurn]++;
+          matchedPairs++;
+          updateScore();
+          flippedCards = [];
+
+          if (matchedPairs === 8) {
+            gameActive = false;
+            setTimeout(() => {
+              const winner = scores[1] === scores[2] ? null :
+                            scores[1] > scores[2] ? 1 : 2;
+              nextStartingPlayer = winner === 1 ? 2 : 1;
+
+              const resultText = winner ? `${playerNames[winner]} wint het spel!` : "Gelijkspel!";
+              showWinnerMessage(resultText);
+              document.getElementById("winnerSound").play();
+              document.body.style.backgroundColor = "#ccc";
+            }, 500);
+          }
+        } else {
+          document.getElementById("wrongSound").play();
+          setTimeout(() => {
+            first.el.textContent = "";
+            second.el.textContent = "";
+            first.el.classList.remove("flipped");
+            second.el.classList.remove("flipped");
+            flippedCards = [];
+            playerTurn = playerTurn === 1 ? 2 : 1;
+            updateTurn();
+          }, 2000);
+        }
+      }
+    }
+
+    function updateScore() {
+      score1El.textContent = scores[1];
+      score2El.textContent = scores[2];
+    }
+
+    function updateTurn() {
+      turnEl.textContent = `${playerNames[playerTurn]}`;
+      document.body.style.backgroundColor = playerColors[playerTurn];
+    }
+
+    function showWinnerMessage(text) {
+      const winnerBox = document.getElementById("winnerMessage");
+      winnerBox.textContent = text;
+      winnerBox.style.display = "block";
+    }
+
+    function startGame() {
+      scores = { 1: 0, 2: 0 };
+      matchedPairs = 0;
+      flippedCards = [];
+      playerTurn = nextStartingPlayer;
+      gameActive = true;
+      createCards();
+      renderCards();
+      updateScore();
+      updateTurn();
+    }
+  </script>
+</body>
+</html>
