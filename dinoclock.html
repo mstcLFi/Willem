@@ -192,6 +192,7 @@
     let level = 1;
     let correctCount = 0;
     let wrongCount = 0;
+    let lastTime = { h: -1, m: -1 };
 
     const successSound = document.getElementById("successSound");
     const wrong1Sound = document.getElementById("wrong1Sound");
@@ -337,11 +338,14 @@
       feedback.textContent = "";
       choicesContainer.innerHTML = "";
 
-      const time = generateTime(level);
-      console.log("Next question time -> h:", time.h, "m:", time.m);
-      const correctLabel = formatTimeDutch(time.h, time.m);
-      console.log("Correct label for this time:", correctLabel);
+      let time;
+      do {
+        time = generateTime(level);
+      } while (time.h === lastTime.h && time.m === lastTime.m); // Prevent repeat
 
+      lastTime = time; // Update after a new unique time is selected
+
+      const correctLabel = formatTimeDutch(time.h, time.m);
       drawClock(time.h, time.m);
 
       const options = generateChoices(correctLabel, level);
