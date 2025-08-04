@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klokkijken</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    #container {
+      position: relative; /* Required for overlay */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin: auto;
+      height: 95vh;
+      aspect-ratio: 3 / 4;
+      max-height: 95vh;
+      max-width: 95vw;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden; /* Ensure overlay doesn't spill out */
+    }
+
+    #container::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("dinosaur images/achtergrond.svg");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.25; /* Controls fading — adjust as needed */
+      z-index: 0;
+    }
+
+    /* Ensure all content stays above the background */
+    #container > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    #levelIndicator {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 2.5em;
+      font-weight: bold;
+      z-index: 2;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 2em;
+    }
+
+    #clockCanvas {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+
+    #choices {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .answer-btn {
+      padding: 12px;
+      font-size: 1.3em;
+      border: 2px solid black;
+      border-radius: 10px;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .answer-btn.correct {
+      border-color: green;
+      box-shadow: 0 0 10px green;
+    }
+
+    .answer-btn.wrong {
+      border-color: red;
+      box-shadow: 0 0 10px red;
+    }
+
+    #feedback {
+      font-size: 1.2em;
+      height: 1.5em;
+      margin-top: 10px;
+      color: #444;
+    }
+
+    #progressBar {
+      width: 100%;
+      height: 15px;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #progress {
+      height: 100%;
+      width: 0%;
+      background: #4caf50;
+      transition: width 0.3s;
+    }
+
+    @media (max-height: 500px), (max-width: 400px) {
+      #container {
+        padding: 10px;
+      }
+
+      .answer-btn {
+        font-size: 1em;
+      }
+
+      h1 {
+        font-size: 1.2em;
+      }
+
+      #levelIndicator {
+        font-size: 2em;
+      }
+    }
+
+    #celebrationOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    #celebrationOverlay img {
+      max-width: 60%;
+      max-height: 60%;
+    }
+  </style>
+</head>
+<body>
+<div id="celebrationOverlay" onclick="hideCelebration()">
+  <img src="dinosaur images/triceratopsje.png" alt="Gefeliciteerd!" />
+</div>
+  <div id="container">
+    <div id="levelIndicator">1</div>
+    <h1>Klokkijken</h1>
+    <canvas id="clockCanvas" width="300" height="300"></canvas>
+    <div id="choices"></div>
+    <p id="feedback"></p>
+    <div id="progressBar"><div id="progress"></div></div>
+  </div>
+
+  <!-- Sound Effects -->
+  <audio id="successSound" src="sounds/success.mp3"></audio>
+  <audio id="wrong1Sound" src="sounds/wrong2.mp3"></audio>
+  <audio id="wrong2Sound" src="sounds/wrong.mp3"></audio>
+
+  <script>
+    const levelIndicator = document.getElementById("levelIndicator");
+    const clockCanvas = document.getElementById("clockCanvas");
+    const ctx = clockCanvas.getContext("2d");
+    const choicesContainer = document.getElementById("choices");
+    const feedback = document.getElementById("feedback");
+    const progressBar = document.getElementById("progress");
+    const celebrationOverlay = document.getElementById("celebrationOverlay");
+
+    let level = 1;
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    const successSound = document.getElementById("successSound");
+    const wrong1Sound = document.getElementById("wrong1Sound");
+    const wrong2Sound = document.getElementById("wrong2Sound");
+
+    function updateLevelColor(level) {
+      const indicator = document.getElementById("levelIndicator");
+      // Level 1 = gray, Level 6 = full red
+      const redIntensity = Math.min(255, 50 + (level - 1) * 40);
+      indicator.style.color = `rgb(${redIntensity}, 0, 0)`;
+    }
+
+    function generateTime(level) {
+      let h, m;
+      switch (level) {
+        case 1:
+          m = 0;
+          h = rand(0, 11);
+          break;
+        case 2:
+          m = rand(0, 1) * 30;
+          h = rand(0, 11);
+          break;
+        case 3:
+          m = [0, 15, 30, 45][rand(0, 3)];
+          h = rand(0, 11);
+          break;
+        case 4:
+          m = [0, 5, 10, 50, 55][rand(0, 4)];
+          h = rand(0, 11);
+          break;
+        case 5:
+          m = [20, 25, 30, 35, 40][rand(0, 4)];
+          h = rand(0, 11);
+          break;
+        case 6:
+          m = rand(0, 11) * 5;
+          h = rand(0, 11);
+          break;
+      }
+      return { h, m };
+    }
+
+    function drawClock(h, m) {
+      ctx.clearRect(0, 0, 300, 300);
+      ctx.save();
+      ctx.translate(150, 150);
+      ctx.beginPath();
+      ctx.arc(0, 0, 140, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 5;
+      ctx.stroke();
+
+      ctx.font = "20px Arial";
+      ctx.fillStyle = "#000";
+      for (let i = 1; i <= 12; i++) {
+        const angle = ((i - 3) * Math.PI) / 6;
+        ctx.fillText(i, Math.cos(angle) * 110 - 10, Math.sin(angle) * 110 + 7);
+      }
+
+      // hour hand
+      ctx.save();
+      ctx.rotate(((h % 12) + m / 60) * (Math.PI / 6));
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -60);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.restore();
+
+      // minute hand
+      ctx.save();
+      ctx.rotate(m * (Math.PI / 30));
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -90);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function formatTimeDutch(h, m) {
+      const hMod = h % 12;
+      const currentHour = hMod;
+      const nextHour = (hMod + 1) % 12;
+
+      const hourNames = [
+        "twaalf", "één", "twee", "drie", "vier", "vijf",
+        "zes", "zeven", "acht", "negen", "tien", "elf"
+      ];
+
+      // Debug logging
+      console.log("formatTimeDutch -> h:", h, "m:", m);
+      console.log("currentHour:", currentHour, "nextHour:", nextHour);
+      console.log("hourNames[currentHour]:", hourNames[currentHour]);
+      console.log("hourNames[nextHour]:", hourNames[nextHour]);
+
+      switch (m) {
+        case 0: return `${hourNames[currentHour]} uur`;
+        case 15: return `kwart over ${hourNames[currentHour]}`;
+        case 30: return `half ${hourNames[nextHour]}`;
+        case 45: return `kwart voor ${hourNames[nextHour]}`;
+        case 5: return `vijf over ${hourNames[currentHour]}`;
+        case 10: return `tien over ${hourNames[currentHour]}`;
+        case 20: return `tien voor half ${hourNames[nextHour]}`;
+        case 25: return `vijf voor half ${hourNames[nextHour]}`;
+        case 35: return `vijf over half ${hourNames[nextHour]}`;
+        case 40: return `tien over half ${hourNames[nextHour]}`;
+        case 50: return `tien voor ${hourNames[nextHour]}`;
+        case 55: return `vijf voor ${hourNames[nextHour]}`;
+        default:
+          console.warn("Unexpected minute value:", m);
+          return `${hourNames[currentHour]} uur`;
+      }
+    }
+
+    function generateChoices(correct, level) {
+      const choices = new Set();
+      choices.add(correct);
+      console.log("Correct answer:", correct);
+
+      while (choices.size < 3) {
+        const time = generateTime(level);
+        const label = formatTimeDutch(time.h, time.m);
+        console.log("Generated distractor:", label);
+        choices.add(label);
+      }
+
+      const finalChoices = Array.from(choices).sort(() => Math.random() - 0.5);
+      console.log("All choices:", finalChoices);
+      return finalChoices;
+    }
+
+    function updateProgress() {
+      progressBar.style.width = `${(correctCount / 10) * 100}%`;
+    }
+
+    function nextQuestion() {
+      feedback.textContent = "";
+      choicesContainer.innerHTML = "";
+
+      const time = generateTime(level);
+      console.log("Next question time -> h:", time.h, "m:", time.m);
+      const correctLabel = formatTimeDutch(time.h, time.m);
+      console.log("Correct label for this time:", correctLabel);
+
+      drawClock(time.h, time.m);
+
+      const options = generateChoices(correctLabel, level);
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.className = "answer-btn";
+        btn.onclick = () => {
+          const isCorrect = opt === correctLabel;
+          btn.classList.add(isCorrect ? "correct" : "wrong");
+          if (isCorrect) {
+            correctCount++;
+            wrongCount = 0;
+            updateProgress();
+            if (correctCount >= 10) {
+              successSound.play();
+
+              if (level === 6) {
+                showCelebration();
+              }
+
+              level = Math.min(6, level + 1);
+              correctCount = 0;
+              wrongCount = 0;
+            }
+            setTimeout(nextQuestion, 1000);
+          } else {
+            wrongCount++;
+            correctCount = (level === 1) ? correctCount : 0;
+            if (wrongCount === 1) wrong1Sound.play();
+            if (wrongCount >= 2) {
+              wrong2Sound.play();
+              if (level === 6) {
+                hasCompletedLevel6 = false;
+              }
+              level = Math.max(1, level - 1);
+              correctCount = 0;
+              wrongCount = 0;
+            }
+            feedback.textContent = `Helaas, het juiste antwoord was: ${correctLabel}`;
+            setTimeout(nextQuestion, 1500);
+          }
+          levelIndicator.textContent = level;
+          updateLevelColor(level);
+          updateProgress();
+        };
+        choicesContainer.appendChild(btn);
+      });
+    }
+
+    function rand(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function showCelebration() {
+      celebrationOverlay.style.display = "flex";
+      hasCompletedLevel6 = true;
+    }
+
+    function hideCelebration() {
+      celebrationOverlay.style.display = "none";
+    }
+
+    levelIndicator.textContent = level;
+    updateLevelColor(level);
+    nextQuestion();
+  </script>
+</body>
+</html>
