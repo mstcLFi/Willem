@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gametitle</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2vw; /* equal margin on all sides */
+    }
+
+    #container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      height: 100%;
+      aspect-ratio: 3 / 4; /* keeps proportions */
+      max-width: 800px; /* cap width on big screens */
+      max-height: 95vh;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+      gap: 1rem;
+    }
+
+    #container::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.25;
+      z-index: 0;
+    }
+
+    #container > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: clamp(1.5rem, 4vw, 2em); /* responsive scaling */
+    }
+
+    label {
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <div>
+      <label for="bgColorPicker">Achtergrondkleur:</label>
+      <input type="color" id="bgColorPicker" />
+    </div>
+    <h1>Game template</h1>
+  </div>
+
+  <script>
+    const bgColorPicker = document.getElementById("bgColorPicker");
+
+    // Load saved color on startup
+    window.addEventListener("DOMContentLoaded", () => {
+      const savedColor = localStorage.getItem("bgColor");
+      if (savedColor) {
+        document.body.style.backgroundColor = savedColor;
+        bgColorPicker.value = savedColor;
+      }
+    });
+
+    // Update background and save on change
+    bgColorPicker.addEventListener("input", (e) => {
+      const color = e.target.value;
+      document.body.style.backgroundColor = color;
+      localStorage.setItem("bgColor", color);
+    });
+  </script>
+</body>
+</html>
