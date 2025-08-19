@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Optellen & Aftrekken</title>
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', sans-serif; }
+  body { display: flex; justify-content: center; align-items: center; padding: 2vw; background: #f0f4f8; }
+
+  #container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 3 / 4;
+    max-width: 800px;
+    max-height: 95vh;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    gap: 1rem;
+  }
+
+  #container::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.25;
+    z-index: 0;
+    transition: opacity 0.3s;
+  }
+
+  #container > * { position: relative; z-index: 1; }
+
+  h1 { margin: 10px 0; font-size: clamp(1.5rem, 4vw, 2em); }
+
+  #level { position: absolute; top: 10px; left: 20px; font-size: 1.2rem; font-weight: bold; }
+
+  .question { font-size: 1.3rem; margin: 1rem 0; }
+  .answers { display: grid; gap: 0.5rem; width: 100%; }
+  .answer {
+    padding: 0.7rem; border: 1px solid #ccc; border-radius: 12px;
+    background: #f9f9f9; cursor: pointer; transition: background 0.2s;
+    text-align: center; font-size: 1.1rem;
+  }
+  .answer:hover { background: #eef; }
+  .correct { background: #c8f7c5 !important; }
+  .wrong { background: #f7c5c5 !important; }
+
+  #lastWrong { color: red; font-size: 0.9rem; margin-top: 1rem; }
+
+  #progressContainer { width: 100%; height: 15px; background: #ddd; border-radius: 8px; overflow: hidden; margin-top: auto; }
+  #progressBar { height: 100%; width: 0%; background: #4caf50; transition: width 0.3s; }
+
+  #bgColorPickerContainer {
+    position: absolute;
+    top: 10px; right: 20px;
+    background: #fff; padding: 5px 10px; border-radius: 10px;
+    z-index: 2;
+  }
+
+  /* Success image overlay */
+  #successImageOverlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: contain;       
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 10;
+    display: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <!-- Background color picker -->
+  <div id="bgColorPickerContainer">
+    <input type="color" id="bgColorPicker" />
+  </div>
+
+  <div id="level">Level 1</div>
+  <h1>Optellen & Aftrekken</h1>
+  <div class="question" id="question"></div>
+  <div class="answers" id="answers"></div>
+  <div id="lastWrong"></div>
+  <div id="progressContainer"><div id="progressBar"></div></div>
+
+  <!-- Success image overlay -->
+  <div id="successImageOverlay"></div>
+
+  <!-- Audio elements -->
+  <audio id="successSound" src="sounds/success.mp3"></audio>
+  <audio id="wrong1Sound" src="sounds/wrong2.mp3"></audio>
+  <audio id="wrongStartSound" src="sounds/wrong.mp3"></audio>
+</div>
+
+<script>
+const qElem = document.getElementById("question");
+const aElem = document.getElementById("answers");
+const lastWrongElem = document.getElementById("lastWrong");
+const successSound = document.getElementById("successSound");
+const wrongSound = document.getElementById("wrong1Sound");
+const wrongStartSound = document.getElementById("wrongStartSound");
+const levelElem = document.getElementById("level");
+const progressBar = document.getElementById("progressBar");
+const bgColorPicker = document.getElementById("bgColorPicker");
+const container = document.getElementById("container");
+const successOverlay = document.getElementById("successImageOverlay");
+
+const successImages = [
+  'spiderman images/ai-generated-7910139_1280.jpg',
+  'spiderman images/ai-generated-7936479_1280.jpg',
+  'spiderman images/ai-generated-8004661_1280.jpg',
+  'spiderman images/ai-generated-8093603_1280.jpg',
+  'spiderman images/ai-generated-8095071_1280.png',
+  'spiderman images/ai-generated-8229798_1280.jpg',
+  'spiderman images/ai-generated-8573475_1280.png',
+  'spiderman images/spiderman-4008954_1280.jpg',
+  'spiderman images/spiderman-7786392_1280.jpg',
+  'spiderman images/spiderman-7810368_1280.webp',
+  'spiderman images/spiderman-8091331_1280.jpg',
+  'spiderman images/superhero-7524471_1280.png',
+  'spiderman images/superhero-8137921_1280.jpg',
+];
+
+let level = 1;
+let progress = 0;
+let wrongStreak = 0;
+let lastQuestion = null;
+
+function generateAddSubQuestion() {
+  let a, b, op, correct;
+  
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  if (level === 1) {
+    a = randomInt(1, 9); b = randomInt(1, 9);
+    while (a + b >= 10) { a = randomInt(1, 9); b = randomInt(1, 9); }
+    op = "+"; correct = a + b;
+  }
+  else if (level === 2) {
+    a = randomInt(1, 12); b = randomInt(1, 12);
+    while (a + b >= 15) { a = randomInt(1, 12); b = randomInt(1, 12); }
+    op = "+"; correct = a + b;
+  }
+  else if (level === 3) {
+    if (Math.random() < 0.5) {
+      a = randomInt(1, 12); b = randomInt(1, 12);
+      while (a + b >= 15) { a = randomInt(1, 12); b = randomInt(1, 12); }
+      op = "+"; correct = a + b;
+    } else {
+      a = randomInt(6, 10); b = randomInt(1, 5);
+      op = "-"; correct = a - b;
+    }
+  }
+  else if (level === 4) {
+    if (Math.random() < 0.5) {
+      a = randomInt(1, 12); b = randomInt(1, 12);
+      while (a + b >= 15) { a = randomInt(1, 12); b = randomInt(1, 12); }
+      op = "+"; correct = a + b;
+    } else {
+      a = randomInt(10, 15); b = randomInt(1, 10);
+      while (a - b <= 0) { a = randomInt(10, 15); b = randomInt(1, 10); }
+      op = "-"; correct = a - b;
+    }
+  }
+  else if (level === 5) {
+    if (Math.random() < 0.5) {
+      a = randomInt(1, 20); b = randomInt(1, 20);
+      while (a + b > 21) { a = randomInt(1, 20); b = randomInt(1, 20); }
+      op = "+"; correct = a + b;
+    } else {
+      a = randomInt(1, 21); b = randomInt(1, 21);
+      while (a - b <= 0) { a = randomInt(1, 21); b = randomInt(1, 21); }
+      op = "-"; correct = a - b;
+    }
+  }
+  else if (level === 6) {
+    if (Math.random() < 0.5) {
+      a = randomInt(1, 50); b = randomInt(1, 50);
+      while (a + b > 50) { a = randomInt(1, 50); b = randomInt(1, 50); }
+      op = "+"; correct = a + b;
+    } else {
+      a = randomInt(1, 50); b = randomInt(1, 12);
+      while (a - b <= 0) { a = randomInt(1, 50); b = randomInt(1, 12); }
+      op = "-"; correct = a - b;
+    }
+  }
+  else { // level 7
+    if (Math.random() < 0.5) {
+      a = randomInt(1, 100); b = randomInt(1, 100);
+      while (a + b > 100) { a = randomInt(1, 100); b = randomInt(1, 100); }
+      op = "+"; correct = a + b;
+    } else {
+      a = randomInt(1, 100); b = randomInt(1, 100);
+      while (a - b <= 0) { a = randomInt(1, 100); b = randomInt(1, 100); }
+      op = "-"; correct = a - b;
+    }
+  }
+
+  // Generate options
+  const answers = new Set([correct]);
+  while (answers.size < 4) {
+    let fake = correct + randomInt(-5, 5);
+    if (fake > 0 && fake !== correct) answers.add(fake);
+  }
+
+  return {
+    text: `${a} ${op} ${b} = ?`,
+    correct: correct.toString(),
+    options: Array.from(answers).map(x=>x.toString()).sort(() => Math.random() - 0.5)
+  };
+}
+
+function updateProgress() {
+  progressBar.style.width = (progress * 10) + '%';
+}
+
+function showHorseImage() {
+  const img = successImages[Math.floor(Math.random() * successImages.length)];
+  successOverlay.style.backgroundImage = `url('${img}')`;
+  successOverlay.style.backgroundColor = bgColorPicker.value; 
+  successOverlay.style.display = 'block';
+
+  successOverlay.onclick = () => {
+    successOverlay.style.display = 'none';
+    successOverlay.onclick = null;
+  };
+}
+
+function newRound(prevQuestion = null, prevAnswer = null) {
+  let q = generateAddSubQuestion();
+
+  qElem.textContent = q.text;
+  aElem.innerHTML = "";
+  lastWrongElem.textContent = prevQuestion && prevAnswer 
+  ? `Fout! ${prevQuestion.replace(" = ?", "")} = ${prevAnswer}` 
+  : "";
+
+  q.options.forEach(opt => {
+    const btn = document.createElement("div");
+    btn.className = "answer";
+    btn.textContent = opt;
+    btn.onclick = () => {
+      if (opt === q.correct) {
+        btn.classList.add("correct");
+        successSound.currentTime = 0; 
+        successSound.play();
+        wrongStreak = 0;
+        progress++;
+        if (progress >= 10) {
+          level++;
+          if (level > 7) level = 7;
+          progress = 0;
+          showHorseImage();
+        }
+        levelElem.textContent = `Level ${level}`;
+        updateProgress();
+        setTimeout(() => newRound(), 500);
+      } else {
+        btn.classList.add("wrong");
+        if (progress === 0) { wrongStartSound.currentTime = 0; wrongStartSound.play(); }
+        else { wrongSound.currentTime = 0; wrongSound.play(); }
+
+        wrongStreak++;
+        progress = 0;
+        if (wrongStreak >= 2) { level--; if (level < 1) level = 1; wrongStreak = 0; }
+        levelElem.textContent = `Level ${level}`;
+        updateProgress();
+        setTimeout(() => newRound(q.text, q.correct), 500);
+      }
+    };
+    aElem.appendChild(btn);
+  });
+  updateProgress();
+}
+
+// Background color picker
+window.addEventListener("DOMContentLoaded", () => {
+  const savedColor = localStorage.getItem("bgColor");
+  if (savedColor) {
+    document.body.style.backgroundColor = savedColor;
+    bgColorPicker.value = savedColor;
+  }
+});
+
+bgColorPicker.addEventListener("input", (e) => {
+  const color = e.target.value;
+  document.body.style.backgroundColor = color;
+  localStorage.setItem("bgColor", color);
+
+  if (successOverlay.style.display === 'block') {
+    successOverlay.style.backgroundColor = color;
+  }
+});
+
+newRound();
+</script>
+</body>
+</html>
