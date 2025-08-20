@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Klokkijken - Digitaal</title>
+  <link rel="icon" type="image/png" href="icon.png">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; height: 100%; background: #f0f4f8; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+
+    #container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin: auto;
+      height: 95vh;
+      aspect-ratio: 3 / 4;
+      max-height: 95vh;
+      max-width: 95vw;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    #container::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("dinosaur images/Digitale achtergrond.jpg");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.25;
+      z-index: 0;
+    }
+
+    #container > * { position: relative; z-index: 1; }
+
+    #levelIndicator { position: absolute; top: 20px; left: 20px; font-size: 2.5em; font-weight: bold; z-index: 2; }
+    h1 { margin: 10px 0; font-size: 2em; }
+
+    #digitalClock {
+      font-size: 3em;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+
+    #choices { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+    .answer-btn {
+      padding: 12px;
+      font-size: 1.3em;
+      border: 2px solid black;
+      border-radius: 10px;
+      background-color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .answer-btn.correct { border-color: green; box-shadow: 0 0 10px green; }
+    .answer-btn.wrong { border-color: red; box-shadow: 0 0 10px red; }
+
+    #feedback { font-size: 1.2em; height: 1.5em; margin-top: 10px; color: #444; }
+    #progressBar { width: 100%; height: 15px; background: #ddd; border-radius: 10px; overflow: hidden; }
+    #progress { height: 100%; width: 0%; background: #4caf50; transition: width 0.3s; }
+
+    @media (max-height: 500px), (max-width: 400px) {
+      #container { padding: 10px; }
+      .answer-btn { font-size: 1em; }
+      h1 { font-size: 1.2em; }
+      #levelIndicator { font-size: 2em; }
+    }
+
+    #celebrationOverlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    #celebrationOverlay img { max-width: 60%; max-height: 60%; }
+
+    #backArrow {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2rem;
+      text-decoration: none;
+      color: #4caf50;
+      opacity: 0.7;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 20;
+    }
+
+    #backArrow:hover { opacity: 1; transform: translateX(-50%) translateY(-2px); }
+  </style>
+</head>
+<body>
+<div id="celebrationOverlay" onclick="hideCelebration()">
+  <img src="dinosaur images/Digitaal triceratopsje.jpg" alt="Gefeliciteerd!" />
+</div>
+
+<a id="backArrow" href="index.html">←</a>
+
+<div id="container">
+  <div id="levelIndicator">1</div>
+  <h1>Klokkijken</h1>
+  <div id="digitalClock">00:00</div>
+  <div id="choices"></div>
+  <p id="feedback"></p>
+  <div id="progressBar"><div id="progress"></div></div>
+</div>
+
+<audio id="successSound" src="sounds/success.mp3"></audio>
+<audio id="wrong1Sound" src="sounds/wrong2.mp3"></audio>
+<audio id="wrong2Sound" src="sounds/wrong.mp3"></audio>
+
+<script>
+const levelIndicator = document.getElementById("levelIndicator");
+const digitalClock = document.getElementById("digitalClock");
+const choicesContainer = document.getElementById("choices");
+const feedback = document.getElementById("feedback");
+const progressBar = document.getElementById("progress");
+const celebrationOverlay = document.getElementById("celebrationOverlay");
+
+let level = 1;
+let correctCount = 0;
+let wrongCount = 0;
+let lastTime = { h: -1, m: -1 };
+let hasCompletedLevel6 = false;
+
+const successSound = document.getElementById("successSound");
+const wrong1Sound = document.getElementById("wrong1Sound");
+const wrong2Sound = document.getElementById("wrong2Sound");
+
+function updateLevelColor(level) {
+  const redIntensity = Math.min(255, 50 + (level - 1) * 40);
+  levelIndicator.style.color = `rgb(${redIntensity}, 0, 0)`;
+}
+
+function generateTime(level) {
+  let h, m;
+  switch(level){
+    case 1: m = 0; h = rand(0,11); break;
+    case 2: m = rand(0,1)*30; h = rand(0,11); break;
+    case 3: m = [0,15,30,45][rand(0,3)]; h = rand(0,11); break;
+    case 4: m = [0,5,10,50,55][rand(0,4)]; h = rand(0,11); break;
+    case 5: m = [20,25,30,35,40][rand(0,4)]; h = rand(0,11); break;
+    case 6: m = rand(0,11)*5; h = rand(0,11); break;
+  }
+
+  // 50% chance to switch to PM (12–23)
+  if(Math.random() < 0.5) h += 12;
+
+  // keep hours within 0-23
+  h = h % 24;
+
+  return { h, m };
+}
+
+function drawDigitalClock(h,m){
+  const hh = h.toString().padStart(2,'0');
+  const mm = m.toString().padStart(2,'0');
+  digitalClock.textContent = `${hh}:${mm}`;
+}
+
+function formatTimeDutch(h, m) {
+  const hMod = h % 12;
+  const currentHour = hMod;
+  const nextHour = (hMod + 1) % 12;
+
+  const hourNames = [
+    "twaalf", "één", "twee", "drie", "vier", "vijf",
+    "zes", "zeven", "acht", "negen", "tien", "elf"
+  ];
+
+  let suffix = "";
+  if (h >= 6 && h < 12) suffix = " ’s ochtends";       // 05:00 - 11:59
+  else if (h >= 12 && h < 18) suffix = " ’s middags";  // 12:00 - 17:59
+  else if (h >= 18 && h < 24) suffix = " ’s avonds";   // 18:00 - 21:59
+  else suffix = " ’s nachts";                          // 22:00 - 04:59
+
+  switch (m) {
+    case 0: return `${hourNames[currentHour]} uur${suffix}`;
+    case 15: return `kwart over ${hourNames[currentHour]}${suffix}`;
+    case 30: return `half ${hourNames[nextHour]}${suffix}`;
+    case 45: return `kwart voor ${hourNames[nextHour]}${suffix}`;
+    case 5: return `vijf over ${hourNames[currentHour]}${suffix}`;
+    case 10: return `tien over ${hourNames[currentHour]}${suffix}`;
+    case 20: return `tien voor half ${hourNames[nextHour]}${suffix}`;
+    case 25: return `vijf voor half ${hourNames[nextHour]}${suffix}`;
+    case 35: return `vijf over half ${hourNames[nextHour]}${suffix}`;
+    case 40: return `tien over half ${hourNames[nextHour]}${suffix}`;
+    case 50: return `tien voor ${hourNames[nextHour]}${suffix}`;
+    case 55: return `vijf voor ${hourNames[nextHour]}${suffix}`;
+    default: return `${hourNames[currentHour]} uur${suffix}`;
+  }
+}
+
+function generateChoices(correct, level){
+  const choices = new Set();
+  choices.add(correct);
+  while(choices.size<3){
+    const t = generateTime(level);
+    choices.add(formatTimeDutch(t.h,t.m));
+  }
+  return Array.from(choices).sort(()=>Math.random()-0.5);
+}
+
+function updateProgress(){
+  progressBar.style.width = `${(correctCount/10)*100}%`;
+}
+
+function nextQuestion(){
+  feedback.textContent="";
+  choicesContainer.innerHTML="";
+
+  let time;
+  do { time=generateTime(level); } while(time.h===lastTime.h && time.m===lastTime.m);
+  lastTime = time;
+
+  const correctLabel = formatTimeDutch(time.h,time.m);
+  drawDigitalClock(time.h,time.m);
+
+  const options = generateChoices(correctLabel,level);
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.textContent=opt;
+    btn.className="answer-btn";
+    btn.onclick=()=>{
+      const isCorrect = opt===correctLabel;
+      btn.classList.add(isCorrect?"correct":"wrong");
+      if(isCorrect){
+        correctCount++;
+        wrongCount=0;
+        updateProgress();
+        if(correctCount>=10){
+          successSound.play();
+          if(level===6){ showCelebration(); }
+          level = Math.min(6, level+1);
+          correctCount=0; wrongCount=0;
+        }
+        setTimeout(nextQuestion,1000);
+      }else{
+        wrongCount++;
+        correctCount=(level===1)?correctCount:0;
+        if(wrongCount===1) wrong1Sound.play();
+        if(wrongCount>=2){
+          wrong2Sound.play();
+          level=Math.max(1,level-1);
+          correctCount=0; wrongCount=0;
+        }
+        feedback.textContent=`Helaas, het juiste antwoord was: ${correctLabel}`;
+        setTimeout(nextQuestion,1500);
+      }
+      levelIndicator.textContent=level;
+      updateLevelColor(level);
+      updateProgress();
+    };
+    choicesContainer.appendChild(btn);
+  });
+}
+
+function rand(min,max){ return Math.floor(Math.random()*(max-min+1)+min); }
+
+function showCelebration(){ celebrationOverlay.style.display="flex"; }
+function hideCelebration(){ celebrationOverlay.style.display="none"; }
+
+updateLevelColor(level);
+nextQuestion();
+</script>
+</body>
+</html>
