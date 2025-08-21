@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    <title>Willem's rekenspelletjes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .tile {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: black;
+        }
+        .tile img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            filter: grayscale(100%);
+            transition: filter 0.3s ease;
+        }
+        .tile:hover img {
+            filter: grayscale(0%);
+        }
+        .tile-title {
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .tile img {
+                height: 120px;
+            }
+        }
+
+        /* Cookie popup styles */
+        #cookie-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            z-index: 9999;
+        }
+        #cookie-popup p {
+            font-size: 1.2em;
+            max-width: 600px;
+            margin-bottom: 20px;
+        }
+        #cookie-popup button {
+            padding: 15px 30px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background: #0d6efd;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Cookie popup -->
+    <div id="cookie-popup">
+        <p>We gebruiken minimale cookies voor gepersonaliseerde advertenties. Klik op "Oké!" om door te gaan.</p>
+        <button id="accept-cookies">Oké!</button>
+    </div>
+
+    <!-- De rest van je pagina -->
+    <div class="container" id="main-content" style="display:none;">
+        <a href="brainrotstyle.html" class="tile">
+            <img src="brainrot images/chimpanzini bananini.webp" alt="Tafels oefenen" style="object-position: top center;">
+            <div class="tile-title">Tafels oefenen</div>
+        </a>
+        <a href="minecraftstyle.html" class="tile">
+            <img src="minecraft images/4.jpg" alt="Lokale tafelcompetitie" style="object-position: top center;">
+            <div class="tile-title">Lokale tafelcompetitie</div>
+        </a>
+        <a href="multiplicationrace.html" class="tile">
+            <img src="brainrot images/tralalero tralala.webp" alt="Online tafelcompetitie" style="object-position: center;">
+            <div class="tile-title">Online tafelcompetitie</div>
+        </a>
+        <a href="memory.html" class="tile">
+            <img src="brainrot images/memory.jpg" alt="Tafel memory" style="object-position: center;">
+            <div class="tile-title">Tafel memory</div>
+        </a>
+        <a href="dinoclock.html" class="tile">
+            <img src="dinosaur images/triceratopsje.png" alt="Klokkijken" style="object-position: center;">
+            <div class="tile-title">Klokkijken</div>
+        </a>
+        <a href="digiclock.html" class="tile">
+            <img src="dinosaur images/Digitaal triceratopsje.jpg" alt="Klokkijken - digitaal" style="object-position: center;">
+            <div class="tile-title">Klokkijken - digitaal</div>
+        </a>
+        <a href="fractions.html" class="tile">
+            <img src="horse images/iceland-2420768_1280.jpg" alt="Breuken" style="object-position: center;">
+            <div class="tile-title">Breuken</div>
+        </a>
+        <a href="calculations.html" class="tile">
+            <img src="spiderman images/spiderman-8091331_1280.jpg" alt="Optellen & Aftrekken" style="object-position: center;">
+            <div class="tile-title">Optellen & Aftrekken</div>
+        </a>
+        <a href="simplesplicing.html" class="tile">
+            <img src="russianblue images/russian-blue-7618223_1280.jpg" alt="Splitsen" style="object-position: center;">
+            <div class="tile-title">Splitsen</div>
+        </a>
+        <a href="#" class="tile" style="pointer-events: none; cursor: default;">
+            <div style="padding:10px; display:flex; justify-content:center; align-items:center; height:100%;">
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3156073245821665"
+                    crossorigin="anonymous"></script>
+                <!-- Advertisement -->
+                <ins class="adsbygoogle"
+                    style="display:block; width:100%; min-height:150px;"
+                    data-ad-client="ca-pub-3156073245821665"
+                    data-ad-slot="9771871555"
+                    data-ad-format="auto"
+                    data-full-width-responsive="true"></ins>
+                <script>
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </a>
+
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const popup = document.getElementById('cookie-popup');
+        const mainContent = document.getElementById('main-content');
+        const acceptBtn = document.getElementById('accept-cookies');
+
+        if (sessionStorage.getItem('cookiesAccepted')) {
+            popup.style.display = 'none';
+            mainContent.style.display = 'grid';
+        }
+
+        acceptBtn.addEventListener('click', () => {
+            sessionStorage.setItem('cookiesAccepted', 'true');
+            popup.style.display = 'none';
+            mainContent.style.display = 'grid';
+        });
+    });
+    </script>
+
+
+</body>
+</html>
