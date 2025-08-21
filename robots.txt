@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /ads/
+Disallow: /private/
+Allow: /
+
+Sitemap: https://www.simpelspel.nl/sitemap.xml
