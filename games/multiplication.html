@@ -98,10 +98,12 @@
   .wrong { background-color: #f44336 !important; color: white; }
 
   #feedback {
-    font-size: 1.4rem;
-    font-weight: bold;
-    min-height: 1.5em;
-    text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      min-height: 1.5em;
+      text-align: center;
+      margin-bottom: 1rem; /* ruimte tussen feedback en vraag */
+      color: red;
   }
 
   #levelContainer {
@@ -143,24 +145,26 @@
   <h1 id="gameTitle">Tafeloefening</h1>
 
   <div id="gameWrapper">
-    <select id="tableSelect">
-      <option value="" selected disabled>Kies een tafel</option>
-      <option value="1">Tafel van 1</option>
-      <option value="2">Tafel van 2</option>
-      <option value="3">Tafel van 3</option>
-      <option value="4">Tafel van 4</option>
-      <option value="5">Tafel van 5</option>
-      <option value="6">Tafel van 6</option>
-      <option value="7">Tafel van 7</option>
-      <option value="8">Tafel van 8</option>
-      <option value="9">Tafel van 9</option>
-      <option value="10">Tafel van 10</option>
-      <option value="11">Tafel van 11</option>
-      <option value="12">Tafel van 12</option>
-    </select>
+      <select id="tableSelect">
+        <option value="" selected disabled>Kies een tafel</option>
+        <option value="1">Tafel van 1</option>
+        <option value="2">Tafel van 2</option>
+        <option value="3">Tafel van 3</option>
+        <option value="4">Tafel van 4</option>
+        <option value="5">Tafel van 5</option>
+        <option value="6">Tafel van 6</option>
+        <option value="7">Tafel van 7</option>
+        <option value="8">Tafel van 8</option>
+        <option value="9">Tafel van 9</option>
+        <option value="10">Tafel van 10</option>
+        <option value="11">Tafel van 11</option>
+        <option value="12">Tafel van 12</option>
+      </select>
 
-    <div id="gameContent"></div>
-    <div id="feedback"></div>
+      <!-- Feedback net onder dropdown -->
+      <div id="feedback"></div>
+
+      <div id="gameContent"></div>
   </div>
 
   <div id="levelContainer">
@@ -312,31 +316,28 @@ function showQuestion(){
           showQuestion();
         },500);
       } else {
-        btn.classList.add("wrong");
+        questionFailed = true;
+        btn.classList.add("wrong"); // altijd rood markeren
         feedback.textContent = `Helaas! ${q.factor} x ${q.table} = ${correctAnswer}`;
-        feedback.style.color = "red";
 
-        if(!questionFailed){
-          questionFailed = true;
-          if(progressCount > 0){
-            progressCount = 0;
-            currentQuestionIndex = 0;
-            setProgress(0);
-            playWrong();
-            saveProgress();
-            showQuestion();
-          } else if(currentLevel > 1){
-            currentLevel--;
-            setLevel(currentLevel);
-            generateQuestions();
-            currentQuestionIndex = 0;
-            progressCount = 0;
-            playDemote();
-            saveProgress();
-            showQuestion();
-          } else {
-            playWrong();
-          }
+        if(progressCount > 0){
+          progressCount = 0;
+          currentQuestionIndex = 0;
+          setProgress(0);
+          playWrong();
+          saveProgress();
+          setTimeout(()=>{ showQuestion(); }, 800);
+        } else if(currentLevel > 1){
+          currentLevel--;
+          setLevel(currentLevel);
+          generateQuestions();
+          currentQuestionIndex = 0;
+          progressCount = 0;
+          playDemote();
+          saveProgress();
+          setTimeout(()=>{ showQuestion(); }, 800);
+        } else {
+          playWrong();
         }
       }
     });
