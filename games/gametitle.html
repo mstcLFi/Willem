@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Example Game</title>
+
+  <!-- Favicons (same as index.html) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../icons/icon-512.png" />
+
+  <!-- Manifest for Android/iOS shortcuts -->
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#68a749" />
+
+  <!-- Shared template CSS -->
+  <link rel="stylesheet" href="../template/template.css">
+
+  <!-- Game-specific CSS -->
+  <style>
+    #gameContent {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #gameContent button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      min-width: 120px;
+    }
+
+    #correctButton { background-color: #4caf50; }
+    #correctButton:hover { background-color: #45a049; }
+
+    #wrongButton { background-color: #f44336; }
+    #wrongButton:hover { background-color: #e53935; }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <!-- Template-provided elements -->
+    <a id="backArrow" href="../index.html">↩︎</a>
+    <input type="color" id="bgColorPicker">
+    <h1 id="gameTitle">Game Template</h1>
+
+    <!-- Game-specific content -->
+    <div id="gameContent">
+      <button id="correctButton">Correct</button>
+      <button id="wrongButton">Wrong</button>
+    </div>
+
+    <div id="levelDisplay">Level 1</div>
+    <div id="progressContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Shared template JS -->
+  <script src="../template/template.js"></script>
+
+  <!-- Game-specific JS -->
+  <script>
+    const correctButton = document.getElementById("correctButton");
+    const wrongButton = document.getElementById("wrongButton");
+
+    let currentLevel = 1;
+    let correctCount = 0;   // counts correct answers in current level
+    const requiredCorrect = 10;
+
+    // Handle correct button
+    correctButton.addEventListener("click", () => {
+      correctCount++;
+      const progress = (correctCount / requiredCorrect) * 100;
+      setProgress(progress);
+
+      if (correctCount >= requiredCorrect) {
+        // Level up!
+        currentLevel++;
+        setLevel(currentLevel);
+        playAdvanceSound();
+
+        // Reset for next level
+        correctCount = 0;
+        setTimeout(() => setProgress(0), 500);
+      }
+    });
+
+    // Handle wrong button
+    wrongButton.addEventListener("click", () => {
+      if (correctCount > 0) {
+        // Lose all progress but stay in same level
+        correctCount = 0;
+        setProgress(0);
+        playIncorrectSound();
+      } else {
+        // Already at 0 → go back a level
+        if (currentLevel > 1) {
+          currentLevel--;
+          setLevel(currentLevel);
+          playDemoteSound();
+        } else {
+          playIncorrectSound(); // still play incorrect sound at level 1
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Template</title>
+
+  <!-- Favicons (same as index.html) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="../icons/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/icon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="../icons/icon-512.png" />
+
+  <!-- Manifest for Android/iOS shortcuts -->
+  <link rel="manifest" href="../manifest.json" />
+  <meta name="theme-color" content="#00B140" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="template.css">
+</head>
+<body>
+  <div id="container">
+    <!-- Back arrow -->
+    <a id="backArrow" href="../index.html">↩︎</a>
+
+    <!-- Color picker -->
+    <input type="color" id="bgColorPicker" value="#00B140">
+
+    <!-- Title (auto-filled from <title>) -->
+    <h1 id="gameTitle">Game Template</h1>
+
+    <!-- Game content placeholder -->
+    <div id="gameContent">
+      <!-- Games will insert their content here -->
+    </div>
+
+    <!-- Level display -->
+    <div id="levelDisplay">Level 1</div>
+
+    <!-- Progress bar -->
+    <div id="progressContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- Shared template JS -->
+  <script src="template.js"></script>
+</body>
+</html>

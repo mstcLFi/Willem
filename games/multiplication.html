@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tafels oefenen</title>
+
+<link rel="stylesheet" href="../template/template.css">
+
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 2rem; /* ruimte voor URL-balk op mobiel */
+    box-sizing: border-box;
+  }
+
+  #gameWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90%;
+    max-width: 400px;
+    flex: 1 0 auto;
+  }
+
+  #tableSelect {
+    margin: 0.5rem 0;
+    font-size: 1.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: white;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="gray" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1em;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  #tableSelect:hover {
+    border-color: #68a749;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  #tableSelect:focus {
+    outline: none;
+    border-color: #68a749;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  #gameContent {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex: 1 0 auto;
+    justify-content: center;
+  }
+
+  #gameContent div {
+    font-size: 1.8rem; /* grotere vraag */
+    margin-bottom: 0.75rem;
+    text-align: center;
+  }
+
+  #gameContent button {
+    padding: 0.75rem 1.25rem;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 1.5rem; /* grotere tekst */
+    cursor: pointer;
+    background-color: white;
+    transition: background-color 0.2s ease;
+    width: 100%;
+  }
+
+  #gameContent button:hover {
+    background-color: lightblue;
+  }
+
+  .correct { background-color: #4caf50 !important; color: white; }
+  .wrong { background-color: #f44336 !important; color: white; }
+
+  #feedback {
+    font-size: 1.4rem;
+    font-weight: bold;
+    min-height: 1.5em;
+    text-align: center;
+  }
+
+  #levelContainer {
+    width: 90%;
+    max-width: 400px;
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #levelDisplay {
+    font-size: 1.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  #progressContainer {
+    width: 100%;
+    height: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #eee;
+  }
+
+  #progressBar {
+    height: 100%;
+    width: 0%;
+    background-color: #68a749;
+    border-radius: 8px;
+    transition: width 0.3s ease;
+  }
+</style>
+</head>
+
+<body>
+<div id="container">
+  <a id="backArrow" href="../index.html">↩︎</a>
+  <input type="color" id="bgColorPicker" />
+  <h1 id="gameTitle">Tafeloefening</h1>
+
+  <div id="gameWrapper">
+    <select id="tableSelect">
+      <option value="" selected disabled>Kies een tafel</option>
+      <option value="1">Tafel van 1</option>
+      <option value="2">Tafel van 2</option>
+      <option value="3">Tafel van 3</option>
+      <option value="4">Tafel van 4</option>
+      <option value="5">Tafel van 5</option>
+      <option value="6">Tafel van 6</option>
+      <option value="7">Tafel van 7</option>
+      <option value="8">Tafel van 8</option>
+      <option value="9">Tafel van 9</option>
+      <option value="10">Tafel van 10</option>
+      <option value="11">Tafel van 11</option>
+      <option value="12">Tafel van 12</option>
+    </select>
+
+    <div id="gameContent"></div>
+    <div id="feedback"></div>
+  </div>
+
+  <div id="levelContainer">
+    <div id="levelDisplay">Level 1</div>
+    <div id="progressContainer">
+      <div id="progressBar"></div>
+    </div>
+  </div>
+</div>
+
+<script src="../template/template.js"></script>
+
+<script>
+const tableSelect = document.getElementById("tableSelect");
+const gameContent = document.getElementById("gameContent");
+const feedback = document.getElementById("feedback");
+
+let currentLevel = 1;
+let currentQuestionIndex = 0;
+let selectedTable = null;
+let questions = [];
+let progressCount = 0; 
+let questionFailed = false;
+
+// LocalStorage keys
+function storageKey(table) {
+  return `tafels_progress_table_${table}`;
+}
+
+function saveProgress() {
+  if(selectedTable !== null){
+    const data = {
+      level: currentLevel,
+      progressCount: progressCount,
+      questionIndex: currentQuestionIndex
+    };
+    localStorage.setItem(storageKey(selectedTable), JSON.stringify(data));
+  }
+}
+
+function loadProgress() {
+  if(selectedTable !== null){
+    const data = localStorage.getItem(storageKey(selectedTable));
+    if(data){
+      const obj = JSON.parse(data);
+      currentLevel = obj.level || 1;
+      progressCount = obj.progressCount || 0;
+      currentQuestionIndex = obj.questionIndex || 0;
+      setLevel(currentLevel);
+      setProgress((progressCount/questions.length)*100);
+    } else {
+      currentLevel = 1;
+      progressCount = 0;
+      currentQuestionIndex = 0;
+      setLevel(currentLevel);
+      setProgress(0);
+    }
+  }
+}
+
+function playAdvance() { if(typeof playAdvanceSound === 'function') playAdvanceSound(); }
+function playWrong() { if(typeof playIncorrectSound === 'function') playIncorrectSound(); }
+function playDemote() { if(typeof playDemoteSound === 'function') playDemoteSound(); }
+
+function setLevel(level){ document.getElementById("levelDisplay").textContent = `Level ${level}`; }
+function setProgress(percent){ document.getElementById("progressBar").style.width = percent + "%"; }
+
+function generateQuestions() {
+  if(!selectedTable) return;
+
+  let qs = [];
+  const t = selectedTable;
+
+  if(currentLevel === 1){
+    for(let i=1;i<=10;i++) qs.push({factor:i, table:t});
+  } else if(currentLevel === 2){
+    const odd = [1,3,5,7,9].map(f=>({factor:f, table:t}));
+    const even = [2,4,6,8,10].map(f=>({factor:f, table:t}));
+    qs.push(...odd, ...even);
+  } else {
+    for(let i=1;i<=10;i++) qs.push({factor:i, table:t});
+    qs.sort(()=>Math.random()-0.5);
+  }
+
+  questions = qs.slice(0,10); 
+}
+
+function generateOptions(correct, level){
+  const options = [correct];
+  const count = level >= 5 ? 4 : 3;
+
+  while(options.length < count){
+    let opt;
+    if(level <= 3){
+      opt = Math.floor(Math.random()*12 + 1)*selectedTable;
+    } else if(level === 4){
+      opt = Math.floor(Math.random()*101);
+    } else {
+      opt = correct + Math.floor(Math.random()*11) - 5;
+      if(opt < 0) opt = 0;
+    }
+    if(!options.includes(opt)) options.push(opt);
+  }
+  return options.sort(()=>Math.random()-0.5);
+}
+
+function showQuestion(){
+  if(!selectedTable) return;
+
+  gameContent.innerHTML = "";
+  feedback.textContent = "";
+
+  if(currentQuestionIndex >= questions.length){
+    currentLevel++;
+    setLevel(currentLevel);
+    playAdvance();
+    generateQuestions();
+    currentQuestionIndex = 0;
+    progressCount = 0;
+    saveProgress();
+    showQuestion();
+    return;
+  }
+
+  const q = questions[currentQuestionIndex];
+  const correctAnswer = q.factor * q.table;
+  questionFailed = false;
+
+  const qEl = document.createElement("div");
+  qEl.textContent = `Wat is ${q.factor} x ${q.table} ?`;
+  gameContent.appendChild(qEl);
+
+  const opts = generateOptions(correctAnswer, currentLevel);
+  opts.forEach(opt=>{
+    const btn = document.createElement("button");
+    btn.textContent = opt;
+
+    btn.addEventListener("click", ()=>{
+      if(opt === correctAnswer){
+        btn.classList.add("correct");
+        if(!questionFailed){
+          progressCount++;
+          setProgress((progressCount/questions.length)*100);
+          saveProgress();
+        }
+        setTimeout(()=>{
+          currentQuestionIndex++;
+          saveProgress();
+          showQuestion();
+        },500);
+      } else {
+        btn.classList.add("wrong");
+        feedback.textContent = `Helaas! ${q.factor} x ${q.table} = ${correctAnswer}`;
+        feedback.style.color = "red";
+
+        if(!questionFailed){
+          questionFailed = true;
+          if(progressCount > 0){
+            progressCount = 0;
+            currentQuestionIndex = 0;
+            setProgress(0);
+            playWrong();
+            saveProgress();
+            showQuestion();
+          } else if(currentLevel > 1){
+            currentLevel--;
+            setLevel(currentLevel);
+            generateQuestions();
+            currentQuestionIndex = 0;
+            progressCount = 0;
+            playDemote();
+            saveProgress();
+            showQuestion();
+          } else {
+            playWrong();
+          }
+        }
+      }
+    });
+
+    gameContent.appendChild(btn);
+  });
+}
+
+tableSelect.addEventListener("change", ()=>{
+  selectedTable = parseInt(tableSelect.value);
+  generateQuestions();
+  loadProgress();
+  showQuestion();
+});
+</script>
+</body>
+</html>
