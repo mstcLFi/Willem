@@ -68,22 +68,23 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.2rem; /* a bit more gap between elements */
+    gap: 1.2rem; /* space between question and answers */
     flex: 1 0 auto;
-    justify-content: center;
+    justify-content: flex-start;   /* ✅ start just below feedback */
+    margin-top: -1.5rem;            /* ✅ adjust this for spacing */
   }
 
   #gameContent div {
-    font-size: 2rem; /* bigger question */
-    margin-bottom: 1rem;
+    font-size: 1.7rem; /* bigger question */
+    margin-bottom: 0.0rem;
     text-align: center;
   }
 
   #gameContent button {
-    padding: 0.9rem 1.3rem;
+    padding: 0.5rem 1.3rem;
     border: 1px solid #ccc;
     border-radius: 12px;
-    font-size: 1.7rem; /* bigger answers */
+    font-size: 1.5rem; /* bigger answers */
     cursor: pointer;
     background-color: white;
     transition: background-color 0.2s ease;
@@ -98,7 +99,7 @@
   .wrong { background-color: #f44336 !important; color: white; }
 
   #feedback {
-    font-size: 1.6rem;  /* bigger feedback */
+    font-size: 1.2rem;  /* bigger feedback */
     font-weight: bold;
     min-height: 1.5em;
     text-align: center;
@@ -121,7 +122,9 @@
   }
 
   #progressContainer {
-    width: 100%;
+    width: 80%;   /* instead of 100% */
+    max-width: 320px;
+    margin: 0 auto; /* ensures it is centered */
     height: 16px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -338,7 +341,7 @@ function generateQuestions() {
 
 function generateOptions(correct, level){
   const options = [correct];
-  const count = level >= 5 ? 4 : 3;
+  const count = level >= 6 ? 4 : 3;
 
   while(options.length < count){
     let opt;
