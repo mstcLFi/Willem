@@ -34,8 +34,8 @@
 
   #tableSelect {
     margin: 0.5rem 0;
-    font-size: 1.4rem;
-    padding: 0.5rem 1rem;
+    font-size: 1.6rem;  /* bigger */
+    padding: 0.6rem 1.2rem;
     border-radius: 12px;
     border: 1px solid #ccc;
     appearance: none;
@@ -68,22 +68,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem; /* a bit more gap between elements */
     flex: 1 0 auto;
     justify-content: center;
   }
 
   #gameContent div {
-    font-size: 1.8rem; /* grotere vraag */
-    margin-bottom: 0.75rem;
+    font-size: 2rem; /* bigger question */
+    margin-bottom: 1rem;
     text-align: center;
   }
 
   #gameContent button {
-    padding: 0.75rem 1.25rem;
+    padding: 0.9rem 1.3rem;
     border: 1px solid #ccc;
     border-radius: 12px;
-    font-size: 1.5rem; /* grotere tekst */
+    font-size: 1.7rem; /* bigger answers */
     cursor: pointer;
     background-color: white;
     transition: background-color 0.2s ease;
@@ -98,26 +98,26 @@
   .wrong { background-color: #f44336 !important; color: white; }
 
   #feedback {
-      font-size: 1.4rem;
-      font-weight: bold;
-      min-height: 1.5em;
-      text-align: center;
-      margin-bottom: 1rem; /* ruimte tussen feedback en vraag */
-      color: red;
+    font-size: 1.6rem;  /* bigger feedback */
+    font-weight: bold;
+    min-height: 1.5em;
+    text-align: center;
+    margin-bottom: 1.25rem; /* more breathing room */
+    color: red;
   }
 
   #levelContainer {
     width: 90%;
     max-width: 400px;
-    margin-top: 1rem;
+    margin-top: 1.2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
   #levelDisplay {
-    font-size: 1.2rem;
-    margin-bottom: 0.25rem;
+    font-size: 1.4rem; /* bigger level text */
+    margin-bottom: 0.4rem;
   }
 
   #progressContainer {
@@ -182,6 +182,90 @@ const tableSelect = document.getElementById("tableSelect");
 const gameContent = document.getElementById("gameContent");
 const feedback = document.getElementById("feedback");
 
+// --- voxel brainrot images + sounds ---
+const successImages = [
+  'voxel brainrot/baleno aeronauto.jpg',
+  'voxel brainrot/bassolussino.jpg',
+  'voxel brainrot/bifolato carnebovino.jpg',
+  'voxel brainrot/buscorno gigantini.jpg',
+  'voxel brainrot/capricoptero.jpg',
+  'voxel brainrot/capronzo ferroviaia.jpg',
+  'voxel brainrot/cavaldo triciclino.jpg',
+  'voxel brainrot/coniglietto quattroruote.jpg',
+  'voxel brainrot/elefanto motoretto.jpg',
+  'voxel brainrot/felinella rotarino.jpg',
+  'voxel brainrot/flaminoggio rollarossa.jpg',
+  'voxel brainrot/girattino cursore.jpg',
+  'voxel brainrot/granaglia maiali.jpg',
+  'voxel brainrot/lumacardi rotellini.jpg',
+  'voxel brainrot/orsorulla.jpg',
+  'voxel brainrot/panda spingiterreni.jpg',
+  'voxel brainrot/pecuura croccante.jpg',
+  'voxel brainrot/pescarretto carbonello.jpg',
+  'voxel brainrot/pollastro navigatto.jpg',
+  'voxel brainrot/scorpione ghiacciatore.jpg',
+  'voxel brainrot/serpenza pedalaio.jpg',
+  'voxel brainrot/testuggino reclinetto.jpg',
+  'voxel brainrot/titlecard.jpg',
+  'voxel brainrot/uccello sommergino.jpg',
+];
+
+// overlay element
+let overlay;
+let overlayImg;
+let overlayAudio;
+
+function createOverlay() {
+  overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.background = "rgba(0,0,0,0.8)";
+  overlay.style.display = "flex";
+  overlay.style.justifyContent = "center";
+  overlay.style.alignItems = "center";
+  overlay.style.zIndex = "9999";
+  overlay.style.cursor = "pointer";
+  overlay.style.visibility = "hidden";
+
+  overlayImg = document.createElement("img");
+  overlayImg.style.maxWidth = "90%";
+  overlayImg.style.maxHeight = "90%";
+  overlayImg.style.borderRadius = "12px";
+  overlayImg.style.boxShadow = "0 0 20px rgba(0,0,0,0.5)";
+
+  overlay.appendChild(overlayImg);
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", () => {
+    overlay.style.visibility = "hidden";
+
+    if (overlayAudio) {
+      overlayAudio.pause();
+      overlayAudio = null;
+    }
+
+    // Reset progress bar when dismissing the overlay
+    progressCount = 0;
+    setProgress(0);
+    showQuestion();
+  });
+}
+
+function showRandomSuccess() {
+  const randomFile = successImages[Math.floor(Math.random() * successImages.length)];
+  overlayImg.src = `../images/${randomFile}`;
+  overlay.style.visibility = "visible";
+
+  // play matching sound
+  const soundPath = `../sounds/${randomFile.replace('.jpg','.mp3')}`;
+  overlayAudio = new Audio(soundPath);
+  overlayAudio.play();
+}
+
+// --- rest of game variables ---
 let currentLevel = 1;
 let currentQuestionIndex = 0;
 let selectedTable = null;
@@ -205,23 +289,23 @@ function saveProgress() {
   }
 }
 
+// ✅ Updated loadProgress to sync questions and progress bar
 function loadProgress() {
   if(selectedTable !== null){
     const data = localStorage.getItem(storageKey(selectedTable));
     if(data){
       const obj = JSON.parse(data);
       currentLevel = obj.level || 1;
-      progressCount = obj.progressCount || 0;
       currentQuestionIndex = obj.questionIndex || 0;
-      setLevel(currentLevel);
-      setProgress((progressCount/questions.length)*100);
+      progressCount = obj.progressCount || 0;
     } else {
       currentLevel = 1;
-      progressCount = 0;
       currentQuestionIndex = 0;
-      setLevel(currentLevel);
-      setProgress(0);
+      progressCount = 0;
     }
+    setLevel(currentLevel);
+    generateQuestions(); // must generate questions before setting progress
+    setProgress((progressCount / questions.length) * 100);
   }
 }
 
@@ -275,16 +359,20 @@ function showQuestion(){
   if(!selectedTable) return;
 
   gameContent.innerHTML = "";
-  feedback.textContent = "";
+  // ❌ don't clear feedback here so it persists
 
+  // End of level reached
   if(currentQuestionIndex >= questions.length){
     currentLevel++;
     setLevel(currentLevel);
-    playAdvance();
     generateQuestions();
     currentQuestionIndex = 0;
     progressCount = 0;
     saveProgress();
+
+    // 🎉 show random voxel brainrot image + sound
+    showRandomSuccess();
+
     showQuestion();
     return;
   }
@@ -297,61 +385,128 @@ function showQuestion(){
   qEl.textContent = `Wat is ${q.factor} x ${q.table} ?`;
   gameContent.appendChild(qEl);
 
-  const opts = generateOptions(correctAnswer, currentLevel);
-  opts.forEach(opt=>{
-    const btn = document.createElement("button");
-    btn.textContent = opt;
+  // --- Level 6+ text input ---
+  if(currentLevel >= 6){
+    const input = document.createElement("input");
+    input.type = "text";
+    input.style.fontSize = "1.7rem";
+    input.style.textAlign = "center";
+    input.style.width = "80%";
+    input.style.padding = "0.6rem";
+    input.style.borderRadius = "12px";
+    input.style.border = "1px solid #ccc";
+    gameContent.appendChild(input);
+    input.focus();
 
-    btn.addEventListener("click", ()=>{
-      if(opt === correctAnswer){
-        btn.classList.add("correct");
-        if(!questionFailed){
+    input.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){
+        // Trim whitespace and check if the input is not empty
+        const rawValue = input.value.trim();
+        if(rawValue === "") return; // do nothing if empty
+
+        const value = parseInt(rawValue);
+        if(isNaN(value)) return; // do nothing if not a number
+
+        feedback.textContent = "";
+
+        if(value === correctAnswer){
+          playAdvance();
           progressCount++;
           setProgress((progressCount/questions.length)*100);
           saveProgress();
-        }
-        setTimeout(()=>{
           currentQuestionIndex++;
-          saveProgress();
-          showQuestion();
-        },500);
-      } else {
-        questionFailed = true;
-        btn.classList.add("wrong"); // altijd rood markeren
-        feedback.textContent = `Helaas! ${q.factor} x ${q.table} = ${correctAnswer}`;
-
-        if(progressCount > 0){
-          progressCount = 0;
-          currentQuestionIndex = 0;
-          setProgress(0);
-          playWrong();
-          saveProgress();
-          setTimeout(()=>{ showQuestion(); }, 800);
-        } else if(currentLevel > 1){
-          currentLevel--;
-          setLevel(currentLevel);
-          generateQuestions();
-          currentQuestionIndex = 0;
-          progressCount = 0;
-          playDemote();
-          saveProgress();
-          setTimeout(()=>{ showQuestion(); }, 800);
+          input.value = "";
+          showQuestion(); // auto-focus next input
         } else {
-          playWrong();
+          questionFailed = true;
+          feedback.textContent = `Helaas! ${q.factor} x ${q.table} = ${correctAnswer}`;
+
+          if(currentLevel > 1){
+            currentLevel--;
+            setLevel(currentLevel);
+            generateQuestions();
+            currentQuestionIndex = 0;
+            progressCount = 0;
+            setProgress(0);
+            playDemote();
+            saveProgress();
+            setTimeout(()=>{ showQuestion(); }, 800);
+          } else {
+            progressCount = 0;
+            currentQuestionIndex = 0;
+            setProgress(0);
+            playWrong();
+            saveProgress();
+            setTimeout(()=>{ showQuestion(); }, 800);
+          }
         }
       }
     });
+  }
+  // --- Levels 1-5 multiple choice ---
+  else {
+    const opts = generateOptions(correctAnswer, currentLevel);
+    opts.forEach(opt=>{
+      const btn = document.createElement("button");
+      btn.textContent = opt;
 
-    gameContent.appendChild(btn);
-  });
+      btn.addEventListener("click", ()=>{
+        feedback.textContent = "";
+
+        if(opt === correctAnswer){
+          btn.classList.add("correct");
+          playAdvance();
+
+          if(!questionFailed){
+            progressCount++;
+            setProgress((progressCount/questions.length)*100);
+            saveProgress();
+          }
+          setTimeout(()=>{
+            currentQuestionIndex++;
+            saveProgress();
+            showQuestion();
+          },500);
+        } else {
+          questionFailed = true;
+          btn.classList.add("wrong");
+          feedback.textContent = `Helaas! ${q.factor} x ${q.table} = ${correctAnswer}`;
+
+          if(progressCount > 0){
+            progressCount = 0;
+            currentQuestionIndex = 0;
+            setProgress(0);
+            playWrong();
+            saveProgress();
+            setTimeout(()=>{ showQuestion(); }, 800);
+          } else if(currentLevel > 1){
+            currentLevel--;
+            setLevel(currentLevel);
+            generateQuestions();
+            currentQuestionIndex = 0;
+            progressCount = 0;
+            playDemote();
+            saveProgress();
+            setTimeout(()=>{ showQuestion(); }, 800);
+          } else {
+            playWrong();
+          }
+        }
+      });
+
+      gameContent.appendChild(btn);
+    });
+  }
 }
 
 tableSelect.addEventListener("change", ()=>{
   selectedTable = parseInt(tableSelect.value);
-  generateQuestions();
-  loadProgress();
+  loadProgress();  // loads level, questions, and correctly sets progress
   showQuestion();
 });
+
+// create overlay on page load
+createOverlay();
 </script>
 </body>
 </html>
